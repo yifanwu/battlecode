@@ -1,4 +1,17 @@
 *.class
+*.xml
+*.txt
+*.conf
+
+# game folder #
+art/
+bin/
+doc/
+lib/
+maps/
+music/
+sound/
+teams/examplefuncsplayer/
 
 # Package Files #
 *.jar
