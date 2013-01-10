@@ -17,3 +17,6 @@ teams/examplefuncsplayer/
 *.jar
 *.war
 *.ear
+*.DS_Store
+*.project
+*.gitignore*
