@@ -13,12 +13,20 @@ public class SoldierOffenseBot extends BaseBot{
 		super(rc, GC);
 	}
 	
-	public void run() throws GameActionException {
-
-		rc.yield();		
+	public void run(){
+		while (true) {
+			if (rc.isActive()) {
+				try {
+					offense();
+				} catch (GameActionException e) {
+					e.printStackTrace();
+				}
+			}
+			rc.yield();		
+		}
 	}
 	
-	private void offense(int idNum) throws GameActionException {
+	private void offense() throws GameActionException {
 		
 		if (rc.senseEncampmentSquare(rc.getLocation())) {		
 			RobotType encampmentType = chooseEncampmentType();
