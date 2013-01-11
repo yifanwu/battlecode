@@ -151,6 +151,8 @@ public class RobotPlayer {
 		else {
 			MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(homeHQ,
 					halfDistBetweenHQ, Team.NEUTRAL);
+			
+			//TODO: permanently save these neutral encampments
 			MapLocation[] defenders = getNearbyDefenders(homeHQ, halfDistBetweenHQ);
 			
 			boolean closest = false;
@@ -168,8 +170,10 @@ public class RobotPlayer {
 				}
 			}
 			if(closest) {
-				goToLocation(dest);
-				if (rc.senseEncampmentSquare(rc.getLocation())) {
+				goToLocation(dest); //TODO: maybe make this move until reached destination
+				
+				//move encampment logic to top
+				if (rc.senseEncampmentSquare(rc.getLocation())) { //bug if already moved this turn
 					rc.captureEncampment(RobotType.SUPPLIER); // make encampment a supplier
 				}
 			}
