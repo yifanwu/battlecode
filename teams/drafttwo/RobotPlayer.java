@@ -107,7 +107,7 @@ public class RobotPlayer {
 	}
 	
 	//TODO: refactor to "decodeLoc" for consistency
-	private static MapLocation decodeMsg (int msg) {
+	private static MapLocation decodeLoc (int msg) {
 		int y = msg % 1000;
 		int x = msg/1000;
 		MapLocation result = new MapLocation(x,y);
@@ -131,20 +131,20 @@ public class RobotPlayer {
 			 * JAM with various messages
 			 */
 			
-			channelSweep();
-			channelJam();
+			//channelSweep();
+			//channelJam();
 			
 			/*
 			 * Broadcasting scheme
 			 * 1: 
 			 * 2: offense
-			 */
+			 
 			isFarEnemyFound = false;
 			int encoded = encodeLoc(closestEnemyNearHome);
 			rc.broadcast(2, encoded);
 			//rc.broadcast(1, ) TODO: messaging for defense
 			//broadcast(data)
-			/* make sure that the hq is not blocked by yielding the robots in front */
+			// make sure that the hq is not blocked by yielding the robots in front //
 			Robot[] blockingRobots = rc.senseNearbyGameObjects(Robot.class,2,rc.getTeam());
 			System.out.println(blockingRobots.length);
 			
@@ -154,15 +154,14 @@ public class RobotPlayer {
 					rc.broadcast(r.getID(), MOVEAWAY);
 				}
 			}
-		}
-		
-		
+			*/
+		}	
 	}
 	
 	//Initialize variables for HQ
 	private static void HQInitialize() {
 		if (!Initialized) {
-			NumChannelGroups = (int)(GameConstants.BROADCAST_MAX_CHANNELS/(3 + GameConstants.BROADCAST_READ_COST));
+			NumChannelGroups = (int)(3 + GameConstants.BROADCAST_READ_COST);
 			NumSavedChannels =
 				(int)(Math.min(GameConstants.BROADCAST_MAX_CHANNELS/(GameConstants.BROADCAST_SEND_COST), 50));
 			Initialized = true;
@@ -171,6 +170,9 @@ public class RobotPlayer {
 	
 	//Sweep a portion of the open channels, looking for ones that are in use, adding them to SavedChannels
 	private static void channelSweep() throws GameActionException {
+		System.out.println("Scanning between " +
+				(int)(GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup)/NumChannelGroups)) + " and " +
+						GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup + 1)/NumChannelGroups));
 		for(int i=(int)(GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup)/NumChannelGroups));
 			i<=GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup + 1)/NumChannelGroups);
 			i++) {
@@ -187,12 +189,14 @@ public class RobotPlayer {
 		
 		if(++ChannelGroup >= NumChannelGroups)
 			ChannelGroup = 0;
+		System.out.println("Number of channel groups: " + NumChannelGroups);
 	}
 	
 	//Jams all channels in SavedChannels
 	private static void channelJam() throws GameActionException {
 		for(int channel: SavedChannels ) {
 			singleChannelJam(channel);
+			System.out.println("Jamming channel " + channel);
 		}
 	}
 	
@@ -356,7 +360,7 @@ public class RobotPlayer {
 				isFarEnemyFound = true;
 			}						
 			// then get over there
-			goToLocation(decodeMsg(rc.readBroadcast(2)));
+			goToLocation(decodeLoc(rc.readBroadcast(2)));
 		}
 
 	}
