@@ -143,16 +143,17 @@ public abstract class BaseBot {
 		rc.broadcast(MineDefuseChannel, encodeLoc(loc)); 
 	}
 	
-	private static int encodeLoc(MapLocation loc) {
+	protected static int encodeLoc(MapLocation loc) {
 		return (loc.x * 1000 + loc.y); // assuming maximum is capped at 1000		
 	}
 	
-	private static MapLocation decodeLoc (int msg) {
+	protected static MapLocation decodeLoc (int msg) {
 		int y = msg % 1000;
-		int x = msg / 1000;
+		int x = msg/1000;
 		MapLocation result = new MapLocation(x,y);
 		return result;
 	}
+
 	
 	protected static void sweepAndJam() throws GameActionException {
 		channelSweep();
