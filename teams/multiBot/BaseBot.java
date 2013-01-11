@@ -26,7 +26,8 @@ public abstract class BaseBot {
 	protected static int MineReportChannel = 2073;
 	protected static int MineDefuseChannel = 2074;
 	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel};
-	private static final int ENCODING_PRIME = 179;
+	protected static final int ENCODING_PRIME = 179;
+	protected static final int INVALID_CODE = 0;
 	
 	//Jamming variables
 	protected static int NumChannelGroups = 4;
@@ -96,6 +97,7 @@ public abstract class BaseBot {
         return closestEnemy;
     }
 	
+	//finds the index of the item in arr that is closest to target
 	protected MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
 		int best = -1;
 		int bestDist = -1;
@@ -118,6 +120,7 @@ public abstract class BaseBot {
 		MapLocation[] locArr = new MapLocation[robots.length];  
 		
 		for (int i = 0; i<robots.length; i++) {
+			//TODO: need canSense before using senseRobotInfo
 			locArr[i] = rc.senseRobotInfo(robots[i]).location;
 		}
 		
@@ -125,8 +128,10 @@ public abstract class BaseBot {
 	}
 	
 	//Gives a list of enemy mines
+	//Returns an empty array if none
 	protected static MapLocation[] mineListen() throws GameActionException {
-		int numMines = rc.readBroadcast(MineListenChannel);
+		int numMines = decodeMsg(rc.readBroadcast(MineListenChannel));
+		
 		MapLocation[] mines = new MapLocation[numMines];
 		for (int i=0;i<numMines;i++) {
 			mines[i] = decodeLoc(rc.readBroadcast(MineListenChannel + i + 1));
@@ -134,7 +139,7 @@ public abstract class BaseBot {
 		return mines;
 	}
 	
-	//Reports location of enemy mine
+	//Reports location of enemy mine in encoded form
 	protected static void mineReport(MapLocation loc) throws GameActionException {
 		rc.broadcast(MineReportChannel, encodeLoc(loc));
 	}
@@ -150,7 +155,7 @@ public abstract class BaseBot {
 	
 	//0 means error
 	protected static int decodeMsg(int msg) {
-		if (msg % ENCODING_PRIME != 0) return 0;
+		if (msg % ENCODING_PRIME != 0 || msg == 0) return INVALID_CODE;
 		else return msg/ENCODING_PRIME;
 	}
 	

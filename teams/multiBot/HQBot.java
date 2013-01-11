@@ -9,7 +9,6 @@ import battlecode.common.*;
 public class HQBot extends BaseBot{
 
 	private static final int MAX_SOLDIERS = 10000;
-	private static final int CLEAR_CHANNEL = -1;
 	
 	private static int totalSoldiers = 0;
 	private static MapLocation enemyHQ;
@@ -38,15 +37,16 @@ public class HQBot extends BaseBot{
 				totalSoldiers++;
 			}
 		}
+	
+		updateMineLocations();
+		
 /*
+ * test code for mine communication
 		if (Clock.getRoundNum() == 10) mineReport(rc.senseEnemyHQLocation());
 		if (Clock.getRoundNum() == 12) mineReport(rc.senseHQLocation());
 		if (Clock.getRoundNum() == 14) mineDefuseReport(rc.senseHQLocation());
 		if (Clock.getRoundNum() == 16) mineDefuseReport(rc.senseEnemyHQLocation());
-	*/	
-		updateMineLocations();
 		
-		/*
 		System.out.println(mines.toString());
 		
 		MapLocation[] a = mineListen();
@@ -56,7 +56,7 @@ public class HQBot extends BaseBot{
 				System.out.println(a[i].toString());
 			}
 		}
-		*/
+*/	
 		
 		/*
 		 * Broadcasting scheme
@@ -82,22 +82,21 @@ public class HQBot extends BaseBot{
 	}
 	
 	private static void updateMineLocations() throws GameActionException {
-		int newMine = rc.readBroadcast(MineReportChannel);
-		if (newMine != CLEAR_CHANNEL) {
-			MapLocation loc = decodeLoc(newMine);
+		MapLocation loc = decodeLoc(rc.readBroadcast(MineReportChannel));
+		if (loc != null) {
 			if(!inMLArrayList(mines, loc)) { //add to list of mines if not in it
 				mines.add(loc);
 			}
-			rc.broadcast(MineReportChannel, CLEAR_CHANNEL);
+			rc.broadcast(MineReportChannel, INVALID_CODE);
 		}
 		
-		int defusedMine = rc.readBroadcast(MineDefuseChannel);
-		if (defusedMine != CLEAR_CHANNEL) {
-			mines.remove(decodeLoc(defusedMine));
-			rc.broadcast(MineDefuseChannel, CLEAR_CHANNEL);
+		loc = decodeLoc(rc.readBroadcast(MineDefuseChannel));
+		if (loc != null) {
+			mines.remove(loc);
+			rc.broadcast(MineDefuseChannel, INVALID_CODE);
 		}
 		
-		rc.broadcast(MineListenChannel, mines.size());
+		rc.broadcast(MineListenChannel, encodeMsg(mines.size()));
 		for (int i=0;i<mines.size();i++) {
 			rc.broadcast(MineListenChannel + i + 1, encodeLoc(mines.get(i)));
 		}
