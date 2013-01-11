@@ -88,7 +88,7 @@ public class RobotPlayer {
 			rc.yield();
 		}
 		
-		logger.close();
+		//logger.close();
 		
 	}
 
