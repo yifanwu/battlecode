@@ -38,11 +38,7 @@ public class RobotPlayer {
 		System.out.println(enemyHQ);
 		
 		closestEnemyNearHome = enemyHQ;
-		
-		BufferedWriter logger = new BufferedWriter(new FileWriter("/log/logging.txt"));		
-		
-		logger.write("started");
-		
+				
 		while(true) {
 
 			try{
@@ -86,9 +82,7 @@ public class RobotPlayer {
 			
 			// CRUCIAL 
 			rc.yield();
-		}
-		
-		logger.close();
+		}		
 		
 	}
 
