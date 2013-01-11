@@ -2,13 +2,14 @@
  * 
  */
 package multiBot;
+import java.util.HashSet;
+
 import battlecode.common.*;
 
 /**
  * TODO: have more types of soldiers!
  */
-public class SoldierOffenseBot extends BaseBot{
-	
+public class SoldierOffenseBot extends BaseBot{	
 	public SoldierOffenseBot (RobotController rc, GameConst GC) {
 		super(rc, GC);
 	}

@@ -14,9 +14,9 @@ import java.util.Random;
 import battlecode.common.*;
 
 public abstract class BaseBot {
-	protected static final boolean VERBOSE = true; 
+	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
-	protected static RobotController rc;
+	static protected RobotController rc;
 	protected MapLocation myLoc;
 	protected GameConst GC;
 	protected static int[] ReservedChannels = {};
@@ -30,7 +30,7 @@ public abstract class BaseBot {
 	protected static Random RandomInt = new Random();
 	
 	public BaseBot(RobotController rc, GameConst GC) {
-		this.rc = rc;
+		rc = rc;
 		this.myLoc = rc.getLocation();
 		this.GC = GC;
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
