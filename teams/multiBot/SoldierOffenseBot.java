@@ -14,16 +14,16 @@ public class SoldierOffenseBot extends BaseBot{
 	}
 	
 	public void run(){
-		while (true) {
-			if (rc.isActive()) {
-				try {
-					offense();
-				} catch (GameActionException e) {
-					e.printStackTrace();
-				}
-			}
-			rc.yield();		
+		if (super.VERBOSE) {
+			System.out.println("Offense run called");
 		}
+		if (rc.isActive()) {
+			try {
+				offense();
+			} catch (GameActionException e) {
+				e.printStackTrace();
+			}
+		}		
 	}
 	
 	private void offense() throws GameActionException {
@@ -41,7 +41,8 @@ public class SoldierOffenseBot extends BaseBot{
 			} else if (closestEnemyRobot != null) {
 				moveToLocAndDefuseMine(closestEnemyRobot);
 			} else {
-				moveToLocAndDefuseMine(GC.enemyHQ);
+				//
+				moveToLocAndDefuseMine(GC.enemyHQ);//rc.senseEnemyHQLocation());
 			}
 		}
 	}
