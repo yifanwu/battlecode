@@ -19,7 +19,13 @@ public abstract class BaseBot {
 	static protected RobotController rc;
 	protected MapLocation myLoc;
 	protected GameConst GC;
-	protected static int[] ReservedChannels = {};
+	
+
+	//Communication variables
+	protected static int MineListenChannel = 5024;
+	protected static int MineReportChannel = 2073;
+	protected static int MineDefuseChannel = 2074;
+	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel};
 	
 	//Jamming variables
 	protected static int NumChannelGroups = 4;
@@ -117,13 +123,35 @@ public abstract class BaseBot {
 		return nearestMapLocation(locArr, target);
 	}
 	
-	protected static MapLocation[] mineListen() {
-		return null;
+	//Gives a list of enemy mines
+	protected static MapLocation[] mineListen() throws GameActionException {
+		int numMines = rc.readBroadcast(MineListenChannel);
+		MapLocation[] mines = new MapLocation[numMines];
+		for (int i=0;i<numMines;i++) {
+			mines[i] = decodeLoc(rc.readBroadcast(MineListenChannel + i + 1));
+		}
+		return mines;
 	}
 	
-	protected static void mineReport(MapLocation loc) {
-		
-		
+	//Reports location of enemy mine
+	protected static void mineReport(MapLocation loc) throws GameActionException {
+		rc.broadcast(MineReportChannel, encodeLoc(loc));
+	}
+	
+	//Reports location of defused mine
+	protected static void mineDefuseReport(MapLocation loc) throws GameActionException {
+		rc.broadcast(MineDefuseChannel, encodeLoc(loc)); 
+	}
+	
+	private static int encodeLoc(MapLocation loc) {
+		return (loc.x * 1000 + loc.y); // assuming maximum is capped at 1000		
+	}
+	
+	private static MapLocation decodeLoc (int msg) {
+		int y = msg % 1000;
+		int x = msg / 1000;
+		MapLocation result = new MapLocation(x,y);
+		return result;
 	}
 	
 	protected static void sweepAndJam() throws GameActionException {

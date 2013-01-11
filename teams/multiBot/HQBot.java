@@ -12,6 +12,7 @@ public class HQBot extends BaseBot{
 	private static int totalSoldiers = 0;
 	private static MapLocation enemyHQ;
 	private static MapLocation homeHQ;
+	private static MapLocation mines[];
 	//private static double halfDistBetweenHQ;
 	
 	public HQBot(RobotController rc, GameConst GC) {
@@ -38,7 +39,6 @@ public class HQBot extends BaseBot{
 			sweepAndJam();
 		}
 
-		
 		/*
 		 * Broadcasting scheme
 		 * 1: 
@@ -60,6 +60,12 @@ public class HQBot extends BaseBot{
 			}
 		}
 		*/	
+	}
+	
+	private static void updateMineLocations() {
+		
+		//read all mine locations
+		//remove defused mines
 	}
 	
 

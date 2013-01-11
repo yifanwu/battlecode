@@ -103,7 +103,6 @@ public class RobotPlayer {
 		return (loc.x * 1000 + loc.y); // assuming maximum is capped at 1000		
 	}
 	
-	//TODO: refactor to "decodeLoc" for consistency
 	private static MapLocation decodeLoc (int msg) {
 		int y = msg % 1000;
 		int x = msg/1000;
