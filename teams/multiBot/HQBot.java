@@ -45,7 +45,7 @@ public class HQBot extends BaseBot{
 //		reserveChannelJam(); //jamming makes it so no information gets through
 
 // test code for mine communication
-		if (Clock.getRoundNum() == 10) mineReport(rc.senseEnemyHQLocation());
+/*		if (Clock.getRoundNum() == 10) mineReport(rc.senseEnemyHQLocation());
 		if (Clock.getRoundNum() == 12) mineReport(rc.senseHQLocation());
 		if (Clock.getRoundNum() == 14) mineDefuseReport(rc.senseHQLocation());
 		if (Clock.getRoundNum() == 16) mineDefuseReport(rc.senseEnemyHQLocation());
@@ -59,7 +59,7 @@ public class HQBot extends BaseBot{
 				System.out.println(a[i].toString());
 			}
 		}
-
+*/
 		
 		/*
 		 * Broadcasting scheme
@@ -84,6 +84,7 @@ public class HQBot extends BaseBot{
 		*/	
 	}
 	
+	//TODO: deal with channel hijacking
 	private static void updateMineLocations() throws GameActionException {
 		MapLocation loc = decodeLoc(rc.readBroadcast(MineReportChannel));
 		if (loc != null) {
@@ -93,12 +94,14 @@ public class HQBot extends BaseBot{
 			rc.broadcast(MineReportChannel, INVALID_CODE);
 		}
 		
+
 		loc = decodeLoc(rc.readBroadcast(MineDefuseChannel));
 		if (loc != null) {
 			mines.remove(loc);
 			rc.broadcast(MineDefuseChannel, INVALID_CODE);
 		}
 		
+		//Deal with case where mineListenchannel has been hijacked
 		rc.broadcast(MineListenChannel, encodeMsg(mines.size()));
 		for (int i=0;i<mines.size();i++) {
 			rc.broadcast(MineListenChannel + i + 1, encodeLoc(mines.get(i)));

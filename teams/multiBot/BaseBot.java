@@ -26,7 +26,7 @@ public abstract class BaseBot {
 	protected static int MineReportChannel = 2073;
 	protected static int MineDefuseChannel = 2074;
 	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel, MineListenChannel + 2};
-	protected static final int ENCODING_PRIME = 179;
+	protected static final int ENCODING_PRIME = 24631;
 	protected static final int INVALID_CODE = 0;
 	
 	//Jamming variables
