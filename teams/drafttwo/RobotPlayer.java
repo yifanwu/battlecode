@@ -8,7 +8,7 @@ import java.util.logging.*;
 import battlecode.common.*;
 
 public class RobotPlayer {
-	//TODO: refactor static variables to ProperCasing
+	//TODO: refactor static variables to ProperCasing 
 	private static final int MAX_SOLDIERS = 10000;
 	private static final int MOVEAWAY = 1;
 	private static final int MAXMOVERANGE = 10; //TODO: try to tune this
@@ -51,7 +51,7 @@ public class RobotPlayer {
 		System.out.println(enemyHQ);
 		
 		closestEnemyNearHome = enemyHQ;
-		
+
 		while(true) {
 			try{
 				if (!rc.isActive()) continue; //Don't execute anything if robot is not active
