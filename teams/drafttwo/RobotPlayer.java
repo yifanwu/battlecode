@@ -3,10 +3,12 @@ package drafttwo;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.*;
 import java.util.logging.*;
 import battlecode.common.*;
 
 public class RobotPlayer {
+	//TODO: refactor static variables to ProperCasing
 	private static final int MAX_SOLDIERS = 10000;
 	private static final int MOVEAWAY = 1;
 	private static final int MAXMOVERANGE = 10; //TODO: try to tune this
@@ -15,12 +17,23 @@ public class RobotPlayer {
 	private static MapLocation defenseRallyPoint = null; 
 	private static MapLocation enemyHQ = null;
 	private static MapLocation homeHQ = null;
-	//	// private static Robot[] enemiesNearHome = {}; //TODO: needed?
+	// private static Robot[] enemiesNearHome = {}; //TODO: needed?
 	private static MapLocation closestEnemyNearHome = null;
 	private static MapLocation closestFarEnemy = null;
 	private static int totalSoldiers = 0; 
 	private static int halfDistBetweenHQ = -1;  //TODO: check if this is actually half
 	private static boolean isFarEnemyFound = false;
+	private static boolean Initialized = false;
+	
+	private static int[] ReservedChannels = {};
+	
+	//HQ variables
+	private static int NumChannelGroups = 4;
+	private static int ChannelGroup = 0;
+	private static int NumSavedChannels = 25;
+	private static Queue<Integer> SavedChannels = new LinkedList<Integer>();
+	private static int NumJamMessages = 10;
+	private static Random RandomInt = new Random();
 
 	//private static lazyCycle //TODO: lazy!
 
@@ -38,19 +51,24 @@ public class RobotPlayer {
 		System.out.println(enemyHQ);
 		
 		closestEnemyNearHome = enemyHQ;
+<<<<<<< HEAD
 				
+=======
+		
+>>>>>>> 98ea9be5e585ae67c53e0cef1c13ce5d1db2a2e5
 		while(true) {
-
 			try{
+				if (!rc.isActive()) continue; //Don't execute anything if robot is not active
 				if (rc.getType() == RobotType.SOLDIER) {
 					int curID = rc.getRobot().getID();					
 					MapLocation curLoc = rc.getLocation();
-
+/*
 					switch(rc.readBroadcast(curID)){
 						case MOVEAWAY:
 							rc.move(rc.getLocation().directionTo(homeHQ).opposite());
 							break;						
 					}
+	*/				
 					
 					if (Clock.getRoundNum() < 50){
 						if (curID % 2 == 1) 
@@ -66,12 +84,15 @@ public class RobotPlayer {
 						}
 					}
 				} 
-				else {
+				else if (rc.getType() == RobotType.HQ){
 					Robot[] enemiesNearHome = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
 					MapLocation n = findClosest(homeHQ, enemiesNearHome);
 					if (n != null)
 						closestEnemyNearHome = n;
 					hqCode();
+				}
+				else if (rc.getType() == RobotType.ARTILLERY) {
+					//look for enemy units and shoot them
 				}
 			}
 
@@ -79,18 +100,17 @@ public class RobotPlayer {
 				System.out.println("caught exception before it killed us:");
 				e.printStackTrace();
 			}
-			
-			// CRUCIAL 
-			rc.yield();
+			 
+			rc.yield(); // CRUCIAL
 		}		
-		
-	}
-
-	private static int encodeLoc(MapLocation loc) {
-		// assuming maximum is capped at 1000
-		return (loc.x * 1000 + loc.y);		
 	}
 	
+
+	private static int encodeLoc(MapLocation loc) {
+		return (loc.x * 1000 + loc.y); // assuming maximum is capped at 1000		
+	}
+	
+	//TODO: refactor to "decodeLoc" for consistency
 	private static MapLocation decodeMsg (int msg) {
 		int y = msg % 1000;
 		int x = msg/1000;
@@ -99,6 +119,7 @@ public class RobotPlayer {
 	}
 
 	private static void hqCode() throws GameActionException{
+		HQInitialize();
 		if (rc.isActive()) {
 			// Spawn a soldier
 			Direction dir = getDirForSpawn(enemyHQ);
@@ -106,8 +127,19 @@ public class RobotPlayer {
 				rc.spawn(dir);
 				totalSoldiers++;
 			}
+			
+			/* 
+			 * Kevin's Offensive Broadcasting strategy
+			 * Sweep a bunch of channels each turn
+			 * Keep a record of the last NumSavedChannels channels that have been found with non-zero data
+			 * JAM with various messages
+			 */
+			
+			channelSweep();
+			channelJam();
+			
 			/*
-			 * Broad casting scheme
+			 * Broadcasting scheme
 			 * 1: 
 			 * 2: offense
 			 */
@@ -130,6 +162,86 @@ public class RobotPlayer {
 		
 		
 	}
+	
+	//Initialize variables for HQ
+	private static void HQInitialize() {
+		if (!Initialized) {
+			NumChannelGroups = (int)(GameConstants.BROADCAST_MAX_CHANNELS/(3 + GameConstants.BROADCAST_READ_COST));
+			NumSavedChannels =
+				(int)(Math.min(GameConstants.BROADCAST_MAX_CHANNELS/(GameConstants.BROADCAST_SEND_COST), 50));
+			Initialized = true;
+		}
+	}
+	
+	//Sweep a portion of the open channels, looking for ones that are in use, adding them to SavedChannels
+	private static void channelSweep() throws GameActionException {
+		for(int i=(int)(GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup)/NumChannelGroups));
+			i<=GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup + 1)/NumChannelGroups);
+			i++) {
+			if(isReservedChannel(i))
+				continue;
+			if (rc.readBroadcast(i) != 0) {
+				SavedChannels.add(i);
+			}
+
+			while (SavedChannels.size() > NumSavedChannels) {
+				SavedChannels.remove();
+			}
+		}
+		
+		if(++ChannelGroup >= NumChannelGroups)
+			ChannelGroup = 0;
+	}
+	
+	//Jams all channels in SavedChannels
+	private static void channelJam() throws GameActionException {
+		for(int channel: SavedChannels ) {
+			singleChannelJam(channel);
+		}
+	}
+	
+	//Jams a single channel with a variety of messages
+	//Good for testing robustness to enemy jamming (i.e. use it on reserved channels)
+	private static void singleChannelJam(int channel) throws GameActionException {
+		int x = Clock.getRoundNum() % NumJamMessages;
+		int orig = rc.readBroadcast(channel);
+		if(x == 0) {
+			rc.broadcast(channel, -1);
+		}
+		else if (x == 1) {
+			rc.broadcast(channel, orig-1);
+		}
+		else if (x == 2) {
+			rc.broadcast(channel, orig+1);	
+		}
+		else if (x == 3) {
+			rc.broadcast(channel, 0);
+		}
+		else if (x == 4) {
+			rc.broadcast(channel, Integer.MAX_VALUE);
+		}
+		else if (x == 5) {
+			rc.broadcast(channel, Integer.MIN_VALUE);
+		}
+		else if (x == 6) {
+			rc.broadcast(channel, orig-5);
+		}
+		else if (x == 7) {
+			rc.broadcast(channel, orig+5);
+		}
+		else { //weighted extra
+			rc.broadcast(channel, (int)(RandomInt.nextInt()));
+		}	
+	}
+	
+	//Checks if channel c is a reserved channel
+	private static boolean isReservedChannel(int c) {
+		for(int x: ReservedChannels) {
+			if(c == x)
+				return true;
+		}
+		return false;
+	}
 
 	/* 
 	 * restricted to the home half
@@ -142,13 +254,93 @@ public class RobotPlayer {
 			goToLocation(closestEnemyNearHome);
 		} 
 		else {
-			// else with probability lay mine 
-			if (Math.random() < 0.083) {
-				rc.layMine();
+			MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(homeHQ,
+					halfDistBetweenHQ, Team.NEUTRAL);
+			
+			//TODO: permanently save these neutral encampments
+			MapLocation[] defenders = getNearbyDefenders(homeHQ, halfDistBetweenHQ);
+			
+			boolean closest = false;
+			MapLocation dest = null;
+			// go to encampment if closest
+			if (defenders.length > 0) {
+				for (MapLocation eloc: nearbyEncampments) {
+					int i = nearestToLoc(defenders, eloc);
+					if (defenders[i].distanceSquaredTo(eloc) > rc.getLocation().distanceSquaredTo(eloc)) {
+						closest = true;
+						dest = eloc;
+						break;
+						//this soldier is closest -- needs to go to destination
+					}
+				}
 			}
+			if(closest) {
+				goToLocation(dest); //TODO: maybe make this move until reached destination
+				
+				//move encampment logic to top
+				if (rc.senseEncampmentSquare(rc.getLocation())) { //bug if already moved this turn
+					rc.captureEncampment(RobotType.SUPPLIER); // make encampment a supplier
+				}
+			}
+			else if (rc.senseMine(rc.getLocation())==null) // place mine if possible
+				rc.layMine();
+			else { //move in random direction
+				Direction dir = Direction.values()[(int)(Math.random()*8)];
+				if(rc.canMove(dir)) {
+					rc.move(dir);
+            	}
+        	}
 		}
 	}
+	
+	//determines which location in arr is closest to target, breaking ties by choosing the lowest x and then y
+	private static int nearestToLoc(MapLocation arr[], MapLocation target) {
+		int best = -1;
+		int bestDist = -1;
+		for (int i=0;i<arr.length;i++) {
+			int dist = arr[i].distanceSquaredTo(target);
+			if ((bestDist == -1) || (bestDist > dist) || (bestDist == dist && arr[best].x > arr[i].x) ||
+					(bestDist == dist && arr[best].x == arr[i].x && arr[best].y > arr[i].y)) {
+				bestDist = dist;
+				best = i;
+			}
+		}
+		return best;
+	}
+	
+	private static boolean isDefender(int x) {
+		return (x % 2 == 0) ? true : false;
+	}
+	
+	private static void Log(String msg)
+	{
+		System.out.println("Turn " + Clock.getRoundNum() + ": " + msg);
+	}
+	
+	// gets defenders within radiusSquared of center using defender IDs
+	// may have a problem with bytecodes if there are too many allied robots
+	// does not give location of self
+	private static MapLocation[] getNearbyDefenders(MapLocation center, int radiusSquared) throws GameActionException {
+		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, center, radiusSquared, rc.getTeam());
+		List<MapLocation> defenders = new ArrayList<MapLocation>();
+		int numDefenders = 0;
+	
+		for (Robot x: allies) {
+			//canSense costs 15 bytecodes, but is safer?
+			if(rc.canSenseObject(x)) {
+				RobotInfo info = rc.senseRobotInfo(x);
+				if (info.type == RobotType.SOLDIER && isDefender(x.getID())) {	
+					defenders.add(info.location);
+					numDefenders++;
+				}
+			}
+		}
+		
+		MapLocation[] temp = new MapLocation[numDefenders]; //used to call toArray
+		return defenders.toArray(temp);
+	}
 
+	//TODO: defuse mines
 	private static void offense(int idNum, MapLocation curLoc) throws GameActionException { 
 		// pass divided by 2
 		// stay in enemy half		
@@ -184,6 +376,7 @@ public class RobotPlayer {
 		MapLocation closestEnemy = null;
 
 		for (Robot r : robots) {
+			//TODO: probably need canSenseRobotInfo first
 			RobotInfo aRobotInfo = rc.senseRobotInfo(r);
 			int dist = aRobotInfo.location.distanceSquaredTo(rc.getLocation());
 
@@ -264,7 +457,4 @@ public class RobotPlayer {
 		MapLocation rallyPoint = new MapLocation(x,y);
 		return rallyPoint;
 	}
-
-
-
 }

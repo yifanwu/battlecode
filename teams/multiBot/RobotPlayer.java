@@ -17,7 +17,7 @@ public class RobotPlayer {
 			br = new SoldierBot(rc);
 			break;
 		default:
-			br = new EncampmentBot(rc);
+			br = new EncampBot(rc);
 			break;
 		}
 		
