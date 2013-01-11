@@ -87,6 +87,9 @@ public class RobotPlayer {
 						closestEnemyNearHome = n;
 					hqCode();
 				}
+				else if (rc.getType() == RobotType.ARTILLERY) {
+					//look for enemy units and shoot them
+				}
 			}
 
 			catch (Exception e) {
