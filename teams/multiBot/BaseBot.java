@@ -16,7 +16,7 @@ import battlecode.common.*;
 public abstract class BaseBot {
 	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
-	static protected RobotController rc;
+	protected static RobotController rc;
 	protected MapLocation myLoc;
 	protected GameConst GC;
 	
@@ -35,8 +35,8 @@ public abstract class BaseBot {
 	protected static int NumJamMessages = 10;
 	protected static Random RandomInt = new Random();
 	
-	public BaseBot(RobotController rc, GameConst GC) {
-		rc = rc;
+	public BaseBot(RobotController myRc, GameConst GC) {
+		rc = myRc;
 		this.myLoc = rc.getLocation();
 		this.GC = GC;
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
@@ -56,7 +56,7 @@ public abstract class BaseBot {
 				e.printStackTrace();
 			}
 			// End turn
-			System.out.println("Yielding now");
+			//System.out.println("Yielding now");
 			rc.yield();
 		}
 	}
@@ -189,7 +189,7 @@ public abstract class BaseBot {
 	protected static void channelJam() throws GameActionException {
 		for(int channel: SavedChannels ) {
 			singleChannelJam(channel);
-			System.out.println("Jamming channel " + channel);
+			//System.out.println("Jamming channel " + channel);
 		}
 	}
 	

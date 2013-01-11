@@ -26,7 +26,7 @@ public class EncampBot extends BaseBot{
 			
 		}
 		else {
-			sweepAndJam();
+			//sweepAndJam();
 		}
 		
 		

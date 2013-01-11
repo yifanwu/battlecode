@@ -29,6 +29,7 @@ public class HQBot extends BaseBot{
 	public void run() throws GameActionException {
 		//code to execute for the whole match
 		//TODO: dummy right now
+		
 		if (rc.isActive()) {
 			// Spawn a soldier
 			Direction dir = getDirForSpawn(enemyHQ);
@@ -37,10 +38,9 @@ public class HQBot extends BaseBot{
 				totalSoldiers++;
 			}
 		}
-		else {
-			sweepAndJam();
-		}
-
+		
+		updateMineLocations();
+		
 		/*
 		 * Broadcasting scheme
 		 * 1: 
