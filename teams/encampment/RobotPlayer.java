@@ -5,8 +5,8 @@ import java.util.Random;
 import battlecode.common.*;
 
 public class RobotPlayer {
-	private static final int MAX_SOLDIERS = 10;
-	private static final int RALLY_TIME = 30;
+	private static final int MAX_SOLDIERS = 100;
+	private static final int RALLY_TIME = 20;
 	private static RobotController rc;
 	private static MapLocation offenseRallyPoint = null; 
 	private static MapLocation defenseRallyPoint = null; 
@@ -26,63 +26,70 @@ public class RobotPlayer {
 		
 		// only set these values once at the beginning of the game
 		if (enemyHQ == null) { 
-//			enemyHQ = rc.senseEnemyHQLocation();
-//			homeHQ = rc.senseHQLocation();
+			enemyHQ = rc.senseEnemyHQLocation();
+			homeHQ = rc.senseHQLocation();
 //			halfDistBetweenHQ = DistBetweenHQ() / 4;
-//			try {
-//				neutralEncampmentSquares = rc.senseEncampmentSquares(homeHQ, 100, Team.NEUTRAL);
-//			} catch (GameActionException e1) {
-//				// e1.printStackTrace();
-//			}	
+			try {
+				neutralEncampmentSquares = rc.senseEncampmentSquares(homeHQ, 100, Team.NEUTRAL);
+			} catch (GameActionException e1) {
+				// e1.printStackTrace();
+			}	
 		}
 		
 		while(true) {
 			try{
-				if (rc.getType() == RobotType.SOLDIER) {
+				if (rc.getType() == RobotType.SOLDIER && rc.isActive()) {
 					int curID = rc.getRobot().getID();
-//					if (Clock.getRoundNum() < RALLY_TIME) { 
-//						// capture encampment if on it
-//						if (rc.senseEncampmentSquare(rc.getLocation())) {
-//							rc.captureEncampment(chooseEncampmentType());
-//							rc.yield();
-//						}
-//						// go to nearbyEncampmentSquare if nearby
-//						int neutralEncampmentLen = neutralEncampmentSquares.length;
-//						if (neutralEncampmentLen > 0) {
-//							MapLocation anEncampment = neutralEncampmentSquares[curID % neutralEncampmentLen];
-//							goToLocation(anEncampment);	
-//						}
-//						// else go to a rally point
-//						else {
-//							// odd is offense, even is defense
-//							if (curID % 2 == 1) 
-//								goToLocation(offenseRallyPoint);
-//							else
-//								goToLocation(defenseRallyPoint);
-//						}
-//					}
-//					
-//					else {
-						if (curID % 3 != 0) 
+					if (Clock.getRoundNum() < RALLY_TIME) { 
+						// capture encampment if on it
+						if (rc.senseEncampmentSquare(rc.getLocation())) {
+							rc.captureEncampment(chooseEncampmentType());
+							rc.yield();
+						}
+						// go to nearbyEncampmentSquare if nearby
+						int neutralEncampmentLen = neutralEncampmentSquares.length;
+						if (neutralEncampmentLen > 0) {
+							MapLocation anEncampment = neutralEncampmentSquares[curID % neutralEncampmentLen];
+							goToLocation(anEncampment);	
+						}
+						// else go to a rally point
+						else {
+							// odd is offense, even is defense
+							if (curID % 2 == 1) 
+								goToLocation(offenseRallyPoint);
+							else
+								goToLocation(defenseRallyPoint);
+						}
+					}
+					
+					else {
+						if (curID % 3 != 0) {
 							offense(curID / 2);
+							rc.yield();
+						}
 						else 
 							defense(curID / 2);
-//					}
+					}
 				} 
 				else if (rc.getType() == RobotType.HQ){
 					Robot[] enemiesNearHome = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
 					closestEnemyNearHome = findClosest(homeHQ, enemiesNearHome);
 					hqCode();
+					rc.yield();
+
 				}
 			}
 
 			catch (Exception e) {
 				System.out.println("caught exception before it killed us:");
+				System.out.println("round " + Clock.getRoundNum());
 				e.printStackTrace();
 			}
-			// necessary? 
 			rc.yield();
-		}					
+
+			// necessary? 
+		}		
+
 	}
 	
 	/* 
@@ -117,21 +124,22 @@ public class RobotPlayer {
 
 		// try to defuse mine
 		Direction dirToEnemyHQ = rc.getLocation().directionTo(enemyHQ);
-		Team mineAtLocation = rc.senseMine(rc.getLocation().add(dirToEnemyHQ));
+		MapLocation nextLoc = rc.getLocation().add(dirToEnemyHQ);
+		Team mineAtLocation = rc.senseMine(nextLoc);
+		
 		if (mineAtLocation != null) {
-			rc.defuseMine(rc.getLocation());
-		}
+			rc.defuseMine(rc.getLocation().add(dirToEnemyHQ));
+		}		
 		// try to capture encampment
 		else if (rc.senseEncampmentSquare(rc.getLocation())) {
 			rc.captureEncampment(chooseEncampmentType());
-			return; 
 		}
-
 		// move toward enemy hq 		
 		else if (idNum % 2 == 1) {
 			// attack HQ
 			goToLocation(enemyHQ); //TODO: optimize			
-		} else {
+		} 
+		else {
 			// gang up
 			// findClosest used to find closest enemy to home and closest enemy to offense??
 			Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
@@ -142,6 +150,7 @@ public class RobotPlayer {
 				goToLocation(enemyHQ);
 			}
         }
+		rc.yield(); 		
 	}
 	
 	private static int DistBetweenHQ() {
@@ -201,8 +210,8 @@ public class RobotPlayer {
 	private static MapLocation findOffenseRallyPoint() {
 		MapLocation enemyLoc = rc.senseEnemyHQLocation();
 		MapLocation ourLoc = rc.senseHQLocation();
-		int x = (enemyLoc.x+3*ourLoc.x)/4;
-		int y = (enemyLoc.y+3*ourLoc.y)/4;
+		int x = (enemyLoc.x*ourLoc.x)/2;
+		int y = (enemyLoc.y*ourLoc.y)/2;
 		MapLocation rallyPoint = new MapLocation(x,y);
 		return rallyPoint;
 	}
