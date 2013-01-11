@@ -72,11 +72,8 @@ public class RobotPlayer {
 					}
 				} 
 				else if (rc.getType() == RobotType.HQ){
-					Robot[] enemiesNearHome = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
-					closestEnemyNearHome = findClosest(homeHQ, enemiesNearHome);
 					hqCode();
 					rc.yield();
-
 				}
 			}
 
@@ -121,45 +118,33 @@ public class RobotPlayer {
 	}
 	
 	private static void offense(int idNum) throws GameActionException { 
-
-		// try to defuse mine
-		Direction dirToEnemyHQ = rc.getLocation().directionTo(enemyHQ);
-		MapLocation nextLoc = rc.getLocation().add(dirToEnemyHQ);
-		Team mineAtLocation = rc.senseMine(nextLoc);
-		
-		if (mineAtLocation != null) {
-			rc.defuseMine(rc.getLocation().add(dirToEnemyHQ));
-		}		
-		// try to capture encampment
-		else if (rc.senseEncampmentSquare(rc.getLocation())) {
-			rc.captureEncampment(chooseEncampmentType());
+		if (rc.senseEncampmentSquare(rc.getLocation())) {
+			RobotType encampmentType = chooseEncampmentType();
+			rc.captureEncampment(encampmentType);
 		}
-		// move toward enemy hq 		
-		else if (idNum % 2 == 1) {
-			// attack HQ
-			goToLocation(enemyHQ); //TODO: optimize			
-		} 
 		else {
-			// gang up
-			// findClosest used to find closest enemy to home and closest enemy to offense??
-			Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
-			if (enemyRobots.length > 0) {
-				goToLocation(findClosest(rc.getLocation(), enemyRobots)); // TODO: add messaging
+			MapLocation closestEncampment = findClosestEnemyEncampment();
+			MapLocation closestEnemyRobot = findClosestEnemyRobot();
+			if (closestEncampment != null) {
+				goToLocation(closestEncampment);
+			}
+			else if (closestEnemyRobot != null) {
+				goToLocation(closestEnemyRobot);
 			}
 			else {
 				goToLocation(enemyHQ);
 			}
-        }
+		}
 		rc.yield(); 		
 	}
 	
-	private static int DistBetweenHQ() {
-		int dist = enemyHQ.distanceSquaredTo(homeHQ);
-		System.out.println("Distance between HQs " + dist);
-		return dist;
-	}
+//	private static int DistBetweenHQ() {
+//		int dist = enemyHQ.distanceSquaredTo(homeHQ);
+//		System.out.println("Distance between HQs " + dist);
+//		return dist;
+//	}
 	
-	private static MapLocation findClosest(MapLocation loc, Robot[] robots) throws GameActionException {
+	private static MapLocation findClosestRobot(Robot[] robots, MapLocation loc) throws GameActionException {
 		int closestDist = 1000000;
 		MapLocation closestEnemy = null;
 		
@@ -187,23 +172,68 @@ public class RobotPlayer {
 		}
 	}
 	
+	/* goToLocation moves in the direction of a location 
+	 * and defuses a mine if its in the way 
+	 * */
 	private static void goToLocation(MapLocation whereToGo) throws GameActionException {
 		int dist = rc.getLocation().distanceSquaredTo(whereToGo);
-		if (dist>0&&rc.isActive()){
+		if (dist > 0 && rc.isActive()) {
 			Direction dir = rc.getLocation().directionTo(whereToGo);
 			int[] directionOffsets = {0,1,-1,2,-2};
 			Direction lookingAtCurrently = dir;
-			lookAround: for (int d:directionOffsets){
+			for (int d : directionOffsets){
 				lookingAtCurrently = Direction.values()[(dir.ordinal()+d+8)%8];
+				
 				if(rc.canMove(lookingAtCurrently)){
-					break lookAround;
+					break;
 				}
 			}
-			rc.move(lookingAtCurrently);
+			
+			MapLocation nextLocation = rc.getLocation().add(lookingAtCurrently);
+
+			if (rc.senseMine(nextLocation) != null) {
+				rc.defuseMine(nextLocation);
+			}
+			else {
+				rc.move(lookingAtCurrently);
+			}
 		}
 	}
 	
+	//determines which location in arr is closest to target, breaking ties by choosing the lowest x and then y
+	private static MapLocation nearestToLoc(MapLocation arr[], MapLocation target) {
+		int best = -1;
+		int bestDist = -1;
+		for (int i=0;i<arr.length;i++) {
+			int dist = arr[i].distanceSquaredTo(target);
+			if ((bestDist == -1) || (bestDist > dist) || (bestDist == dist && arr[best].x > arr[i].x) ||
+					(bestDist == dist && arr[best].x == arr[i].x && arr[best].y > arr[i].y)) {
+				bestDist = dist;
+				best = i;
+			}
+		}
+		
+		if (best != -1) {
+			return arr[best];
+		}
+		return null;
+	}
+	
+	private static MapLocation findClosestEnemyEncampment() throws GameActionException {
+		MapLocation rcLocation = rc.getLocation();
+		MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(rcLocation, 10000, Team.NEUTRAL);
+		
+		MapLocation closestEncampment = nearestToLoc(nearbyEncampments, rcLocation);
+		return closestEncampment;
+	}
 
+	private static MapLocation findClosestEnemyRobot() throws GameActionException {
+		MapLocation rcLocation = rc.getLocation();
+		Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
+		
+		MapLocation closestEnemy = findClosestRobot(enemyRobots, rcLocation);
+		return closestEnemy;
+	}
 	/*
 	 * make sure that we change direction if not movable 
 	 */
