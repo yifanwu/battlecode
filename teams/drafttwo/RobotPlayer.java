@@ -235,6 +235,7 @@ public class RobotPlayer {
 		return defenders.toArray(temp);
 	}
 
+	//TODO: defuse mines
 	private static void offense(int idNum, MapLocation curLoc) throws GameActionException { 
 		// pass divided by 2
 		// stay in enemy half		
