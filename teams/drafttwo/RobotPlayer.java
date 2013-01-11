@@ -3,6 +3,7 @@ package drafttwo;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.*;
 import battlecode.common.*;
 
@@ -39,23 +40,19 @@ public class RobotPlayer {
 		
 		closestEnemyNearHome = enemyHQ;
 		
-		BufferedWriter logger = new BufferedWriter(new FileWriter("/log/logging.txt"));		
-		
-		logger.write("started");
-		
 		while(true) {
 
 			try{
 				if (rc.getType() == RobotType.SOLDIER) {
 					int curID = rc.getRobot().getID();					
 					MapLocation curLoc = rc.getLocation();
-
+/*
 					switch(rc.readBroadcast(curID)){
 						case MOVEAWAY:
 							rc.move(rc.getLocation().directionTo(homeHQ).opposite());
 							break;						
 					}
-					
+	*/				
 					if (Clock.getRoundNum() < 50){
 						if (curID % 2 == 1) 
 							goToLocation(offenseRallyPoint);
@@ -148,11 +145,51 @@ public class RobotPlayer {
 			goToLocation(closestEnemyNearHome);
 		} 
 		else {
-			// else with probability lay mine 
-			if (Math.random() < 0.083) {
-				rc.layMine();
+			MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(homeHQ,
+					halfDistBetweenHQ, rc.getTeam().opponent());
+			MapLocation[] defenders = getNearbyDefenders(homeHQ, halfDistBetweenHQ);
+
+			// go to encampments
+			// 
+			// place mine if possible
+            if (rc.senseMine(rc.getLocation())==null)
+            	rc.layMine();
+            else {
+            	//move in random direction
+                Direction dir = Direction.values()[(int)(Math.random()*8)];
+                if(rc.canMove(dir)) {
+                  rc.move(dir);
+                }
+            }
+
+		}
+	}
+	
+	private static boolean isDefender(int x) {
+		return (x % 2 == 0) ? true : false;
+	}
+	
+	// gets defenders within radiusSquared of center using defender IDs
+	// may have a problem with bytecodes if there are too many allied robots
+	private static MapLocation[] getNearbyDefenders(MapLocation center, int radiusSquared) throws GameActionException {
+		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, center, radiusSquared, rc.getTeam());
+		List<MapLocation> defenders = null;
+		
+		System.out.println("My location: " + rc.getLocation().x + " " + rc.getLocation().y);
+		
+		for (Robot x: allies) {
+			//canSense costs 15 bytecodes, but is safer?
+			if(rc.canSenseObject(x)) {
+				RobotInfo info = rc.senseRobotInfo(x);
+				if (info.type == RobotType.SOLDIER && isDefender(x.getID())) {
+					defenders.add(info.location);
+					System.out.println(info.location.x + " " + info.location.y);
+				}
 			}
 		}
+		
+		MapLocation[] temp = null; //used to call toArray
+		return defenders.toArray(temp);
 	}
 
 	private static void offense(int idNum, MapLocation curLoc) throws GameActionException { 
@@ -270,7 +307,4 @@ public class RobotPlayer {
 		MapLocation rallyPoint = new MapLocation(x,y);
 		return rallyPoint;
 	}
-
-
-
 }
