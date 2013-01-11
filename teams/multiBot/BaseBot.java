@@ -30,35 +30,6 @@ public abstract class BaseBot {
 		}
 	}
 	
-	//determines which location in arr is closest to target, breaking ties by choosing the lowest x and then y
-	protected MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
-		int best = -1;
-		int bestDist = -1;
-		for (int i=0;i<arr.length;i++) {
-			int dist = arr[i].distanceSquaredTo(target);
-			if ((bestDist == -1) || (bestDist > dist) || (bestDist == dist && arr[best].x > arr[i].x) ||
-					(bestDist == dist && arr[best].x == arr[i].x && arr[best].y > arr[i].y)) {
-				bestDist = dist;
-				best = i;
-			}
-		}
-		if (best == -1) {
-			return null;
-		} else {
-			return arr[best];
-		}
-	}
-	
-	protected MapLocation nearestBotLocation(Robot robots[], MapLocation target) throws GameActionException {
-		MapLocation[] locArr = new MapLocation[robots.length];  
-		
-		for (int i = 0; i<robots.length; i++) {
-			locArr[i] = rc.senseRobotInfo(robots[i]).location;
-		}
-		
-		return nearestMapLocation(locArr, target);
-	}
-	
 	protected Direction availableDirection(MapLocation destination) {
 		Direction lookingAtCurrently = null;
 		
@@ -92,5 +63,33 @@ public abstract class BaseBot {
         
         return closestEnemy;
     }
+	
+	private MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
+		int best = -1;
+		int bestDist = -1;
+		for (int i=0;i<arr.length;i++) {
+			int dist = arr[i].distanceSquaredTo(target);
+			if ((bestDist == -1) || (bestDist > dist) || (bestDist == dist && arr[best].x > arr[i].x) ||
+					(bestDist == dist && arr[best].x == arr[i].x && arr[best].y > arr[i].y)) {
+				bestDist = dist;
+				best = i;
+			}
+		}
+		if (best == -1) {
+			return null;
+		} else {
+			return arr[best];
+		}
+	}
+	
+	private MapLocation nearestBotLocation(Robot robots[], MapLocation target) throws GameActionException {
+		MapLocation[] locArr = new MapLocation[robots.length];  
+		
+		for (int i = 0; i<robots.length; i++) {
+			locArr[i] = rc.senseRobotInfo(robots[i]).location;
+		}
+		
+		return nearestMapLocation(locArr, target);
+	}
 	
 }
