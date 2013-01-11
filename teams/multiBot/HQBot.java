@@ -12,5 +12,15 @@ public class HQBot extends BaseBot{
 	
 	public void run() throws GameActionException {
 		//code to execute for the whole match
+		//TODO: dummy righ now
+		if (rc.isActive()) {
+			// Spawn a soldier
+			Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+			if (rc.canMove(dir)) {
+				rc.spawn(dir);
+			}
+		}
 	}
+	
+	
 }

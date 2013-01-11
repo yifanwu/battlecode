@@ -92,4 +92,9 @@ public abstract class BaseBot {
 		return nearestMapLocation(locArr, target);
 	}
 	
+	private static void Log(String msg)
+	{
+		System.out.println("Turn " + Clock.getRoundNum() + ": " + msg);
+	}
+	
 }

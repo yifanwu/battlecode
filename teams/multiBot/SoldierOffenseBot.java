@@ -7,13 +7,15 @@ import battlecode.common.*;
 /**
  * TODO: have more types of soldiers!
  */
-public class SoldierBot extends BaseBot{
+public class SoldierOffenseBot extends BaseBot{
 	
-	public SoldierBot (RobotController rc, GameConst GC) {
+	public SoldierOffenseBot (RobotController rc, GameConst GC) {
 		super(rc, GC);
 	}
 	
 	public void run() throws GameActionException {
+		
+		
 		
 	}
 	
