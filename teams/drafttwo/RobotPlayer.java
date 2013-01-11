@@ -3,7 +3,7 @@ package drafttwo;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 import java.util.logging.*;
 import battlecode.common.*;
 
@@ -43,6 +43,7 @@ public class RobotPlayer {
 		while(true) {
 
 			try{
+				if (!rc.isActive()) continue; //Don't execute anything if robot is not active
 				if (rc.getType() == RobotType.SOLDIER) {
 					int curID = rc.getRobot().getID();					
 					MapLocation curLoc = rc.getLocation();
@@ -146,7 +147,7 @@ public class RobotPlayer {
 		} 
 		else {
 			MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(homeHQ,
-					halfDistBetweenHQ, rc.getTeam().opponent());
+					halfDistBetweenHQ, Team.NEUTRAL);
 			MapLocation[] defenders = getNearbyDefenders(homeHQ, halfDistBetweenHQ);
 
 			// go to encampments
@@ -169,13 +170,18 @@ public class RobotPlayer {
 		return (x % 2 == 0) ? true : false;
 	}
 	
+	private static void Log(String msg)
+	{
+		System.out.println("Turn " + Clock.getRoundNum() + ": " + msg);
+	}
+	
 	// gets defenders within radiusSquared of center using defender IDs
 	// may have a problem with bytecodes if there are too many allied robots
 	private static MapLocation[] getNearbyDefenders(MapLocation center, int radiusSquared) throws GameActionException {
 		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, center, radiusSquared, rc.getTeam());
-		List<MapLocation> defenders = null;
+		List<MapLocation> defenders = new ArrayList<MapLocation>();
 		
-		System.out.println("My location: " + rc.getLocation().x + " " + rc.getLocation().y);
+		Log("My location: " + rc.getLocation().x + " " + rc.getLocation().y);
 		
 		for (Robot x: allies) {
 			//canSense costs 15 bytecodes, but is safer?
@@ -188,7 +194,7 @@ public class RobotPlayer {
 			}
 		}
 		
-		MapLocation[] temp = null; //used to call toArray
+		MapLocation[] temp = new MapLocation[1]; //used to call toArray
 		return defenders.toArray(temp);
 	}
 
