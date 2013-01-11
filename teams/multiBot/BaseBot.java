@@ -3,17 +3,14 @@ package multiBot;
 import battlecode.common.*;
 
 public abstract class BaseBot {
-	private static final int MAXSQUARERADIUS = 10000;
-	RobotController rc;
-	int width;
-	private static MapLocation enemyHQ = null;
-	private static MapLocation homeHQ = null;
-	MapLocation myLoc;
-	GameConst GC = null;
+	private static final int MAX_SQUARE_RADIUS = 10000;
+	protected RobotController rc;
+	protected MapLocation myLoc;
+	protected GameConst GC;
 	
 	public BaseBot(RobotController rc, GameConst GC) {
 		this.rc = rc;
-		myLoc = rc.getLocation();
+		this.myLoc = rc.getLocation();
 		this.GC = GC;
 	}
 	
@@ -28,14 +25,13 @@ public abstract class BaseBot {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
 			// End turn
 			rc.yield();
 		}
 	}
 	
 	//determines which location in arr is closest to target, breaking ties by choosing the lowest x and then y
-	private MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
+	protected MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
 		int best = -1;
 		int bestDist = -1;
 		for (int i=0;i<arr.length;i++) {
@@ -46,14 +42,14 @@ public abstract class BaseBot {
 				best = i;
 			}
 		}
-		if (best==-1) {
+		if (best == -1) {
 			return null;
 		} else {
 			return arr[best];
 		}
 	}
 	
-	private MapLocation nearestBotLocation(Robot robots[], MapLocation target) throws GameActionException {
+	protected MapLocation nearestBotLocation(Robot robots[], MapLocation target) throws GameActionException {
 		MapLocation[] locArr = new MapLocation[robots.length];  
 		
 		for (int i = 0; i<robots.length; i++) {
@@ -81,20 +77,17 @@ public abstract class BaseBot {
         }
         
         return lookingAtCurrently;
-        
 	}
 	
 	protected MapLocation findClosestEnemyEncampment() throws GameActionException {
-
-		MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(myLoc, MAXSQUARERADIUS, Team.NEUTRAL);        
+		MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(myLoc, MAX_SQUARE_RADIUS, Team.NEUTRAL);        
         MapLocation closestEncampment = nearestMapLocation(nearbyEncampments, myLoc);
         
         return closestEncampment;
     }
 	
-    private MapLocation findClosestEnemyRobot() throws GameActionException {
-        
-        Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,MAXSQUARERADIUS, rc.getTeam().opponent());        
+	protected MapLocation findClosestEnemyRobot() throws GameActionException {
+        Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,MAX_SQUARE_RADIUS, rc.getTeam().opponent());        
         MapLocation closestEnemy = nearestBotLocation(enemyRobots, myLoc);
         
         return closestEnemy;

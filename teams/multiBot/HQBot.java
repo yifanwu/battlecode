@@ -12,6 +12,5 @@ public class HQBot extends BaseBot{
 	
 	public void run() throws GameActionException {
 		//code to execute for the whole match
-		
 	}
 }

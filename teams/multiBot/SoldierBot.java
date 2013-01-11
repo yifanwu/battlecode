@@ -11,7 +11,6 @@ public class SoldierBot extends BaseBot{
 	
 	public SoldierBot (RobotController rc, GameConst GC) {
 		super(rc, GC);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public void run() throws GameActionException {
