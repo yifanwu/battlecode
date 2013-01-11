@@ -2,6 +2,7 @@ package multiBot;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.*;
 
 import battlecode.common.*;
 
@@ -12,7 +13,7 @@ public class HQBot extends BaseBot{
 	private static int totalSoldiers = 0;
 	private static MapLocation enemyHQ;
 	private static MapLocation homeHQ;
-	private static MapLocation mines[];
+	private static ArrayList<MapLocation> mines;
 	//private static double halfDistBetweenHQ;
 	
 	public HQBot(RobotController rc, GameConst GC) {
@@ -63,7 +64,14 @@ public class HQBot extends BaseBot{
 	}
 	
 	private static void updateMineLocations() {
-		
+		int newMine = rc.readBroadcast(MineReportChannel);
+		if (newMine != -1) {
+			
+			//add to list of mines
+			
+			
+			rc.broadcast(MineReportchannel, -1);
+		}
 		//read all mine locations
 		//remove defused mines
 	}
