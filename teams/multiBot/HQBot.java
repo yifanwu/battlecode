@@ -10,7 +10,7 @@ public class HQBot extends BaseBot{
 
 	private static final int MAX_SOLDIERS = 10000;
 	private static final int CLEAR_CHANNEL = -1;
-
+	
 	private static int totalSoldiers = 0;
 	private static MapLocation enemyHQ;
 	private static MapLocation homeHQ;
@@ -38,8 +38,25 @@ public class HQBot extends BaseBot{
 				totalSoldiers++;
 			}
 		}
-		
+/*
+		if (Clock.getRoundNum() == 10) mineReport(rc.senseEnemyHQLocation());
+		if (Clock.getRoundNum() == 12) mineReport(rc.senseHQLocation());
+		if (Clock.getRoundNum() == 14) mineDefuseReport(rc.senseHQLocation());
+		if (Clock.getRoundNum() == 16) mineDefuseReport(rc.senseEnemyHQLocation());
+	*/	
 		updateMineLocations();
+		
+		/*
+		System.out.println(mines.toString());
+		
+		MapLocation[] a = mineListen();
+		if(a.length > 0) {
+			System.out.println("Heard mine(s) at these locations:");
+			for(int i=0;i<a.length;i++) {
+				System.out.println(a[i].toString());
+			}
+		}
+		*/
 		
 		/*
 		 * Broadcasting scheme
@@ -64,7 +81,6 @@ public class HQBot extends BaseBot{
 		*/	
 	}
 	
-	//TODO: deal with turn 1 putting location 0 in
 	private static void updateMineLocations() throws GameActionException {
 		int newMine = rc.readBroadcast(MineReportChannel);
 		if (newMine != CLEAR_CHANNEL) {

@@ -26,6 +26,7 @@ public abstract class BaseBot {
 	protected static int MineReportChannel = 2073;
 	protected static int MineDefuseChannel = 2074;
 	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel};
+	private static final int ENCODING_PRIME = 179;
 	
 	//Jamming variables
 	protected static int NumChannelGroups = 4;
@@ -143,13 +144,39 @@ public abstract class BaseBot {
 		rc.broadcast(MineDefuseChannel, encodeLoc(loc)); 
 	}
 	
-	protected static int encodeLoc(MapLocation loc) {
-		return (loc.x * 1000 + loc.y); // assuming maximum is capped at 1000		
+	protected static int encodeMsg(int msg) {
+		return msg*ENCODING_PRIME;
 	}
 	
-	protected static MapLocation decodeLoc (int msg) {
+	//0 means error
+	protected static int decodeMsg(int msg) {
+		if (msg % ENCODING_PRIME != 0) return 0;
+		else return msg/ENCODING_PRIME;
+	}
+	
+	protected static int encodeLoc(MapLocation loc) {
+		return encodeMsg(insecureEncodeLoc(loc));
+	}
+	
+	//returns null if location is invalid
+	protected static MapLocation decodeLoc(int msg) {
+		return insecureDecodeLoc(decodeMsg(msg));
+	}
+	
+	//encodes a location as an int
+	//add 1 so 0 is not valid
+	protected static int insecureEncodeLoc(MapLocation loc) {
+		return (loc.x * 1000 + loc.y + 1); // assuming maximum is capped at 1000		
+	}
+	
+	//returns null if the location is invalid
+	protected static MapLocation insecureDecodeLoc (int msg) {
+		msg--;
 		int y = msg % 1000;
-		int x = msg/1000;
+		int x = msg / 1000;
+		if(y < 0 || y >= rc.getMapHeight()|| x < 0 || x >= rc.getMapWidth()) {
+			return null;
+		}
 		MapLocation result = new MapLocation(x,y);
 		return result;
 	}
