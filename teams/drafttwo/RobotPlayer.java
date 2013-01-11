@@ -51,11 +51,7 @@ public class RobotPlayer {
 		System.out.println(enemyHQ);
 		
 		closestEnemyNearHome = enemyHQ;
-<<<<<<< HEAD
-				
-=======
-		
->>>>>>> 98ea9be5e585ae67c53e0cef1c13ce5d1db2a2e5
+
 		while(true) {
 			try{
 				if (!rc.isActive()) continue; //Don't execute anything if robot is not active
