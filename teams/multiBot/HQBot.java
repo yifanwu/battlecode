@@ -34,6 +34,9 @@ public class HQBot extends BaseBot{
 				totalSoldiers++;
 			}
 		}
+		else {
+			sweepAndJam();
+		}
 
 		
 		/*

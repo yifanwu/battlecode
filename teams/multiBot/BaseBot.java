@@ -117,6 +117,15 @@ public abstract class BaseBot {
 		return nearestMapLocation(locArr, target);
 	}
 	
+	protected static MapLocation[] mineListen() {
+		return null;
+	}
+	
+	protected static void mineReport(MapLocation loc) {
+		
+		
+	}
+	
 	protected static void sweepAndJam() throws GameActionException {
 		channelSweep();
 		channelJam();
