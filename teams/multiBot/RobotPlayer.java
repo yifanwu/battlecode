@@ -24,11 +24,18 @@ public class RobotPlayer {
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
 			switch(mySoldierType) {
 				case DEFENSE:
-					br = new SoldierDefenseBot(rc, GC);			
+					br = new SoldierOffenseBot(rc, GC);
+					System.out.println("defense bot called");
 					break;
 				case OFFENSE:
+					//TODO: hack
 					br = new SoldierOffenseBot(rc, GC);	
-					break;					
+					System.out.println("offense bot called");
+					break;
+				default:
+					br = new SoldierOffenseBot(rc, GC);	
+					System.out.println("other bot called");
+
 			}					
 			break;
 		default:

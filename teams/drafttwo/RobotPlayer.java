@@ -1,17 +1,14 @@
 package drafttwo;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.*;
 import battlecode.common.*;
 
 public class RobotPlayer {
 	//TODO: refactor static variables to ProperCasing 
 	private static final int MAX_SOLDIERS = 10000;
-	private static final int MOVEAWAY = 1;
-	private static final int MAXMOVERANGE = 10; //TODO: try to tune this
+	private static final int MOVE_AWAY = 1;
+	private static final int MAX_MOVE_RANGE = 10; //TODO: try to tune this
 	private static RobotController rc;
 	private static MapLocation offenseRallyPoint = null; 
 	private static MapLocation defenseRallyPoint = null; 
@@ -230,7 +227,7 @@ public class RobotPlayer {
 			rc.broadcast(channel, orig+5);
 		}
 		else { //weighted extra
-			rc.broadcast(channel, (int)(RandomInt.nextInt()));
+			rc.broadcast(channel, RandomInt.nextInt());
 		}	
 	}
 	
@@ -412,12 +409,12 @@ public class RobotPlayer {
 
 			MapLocation midLoc = new MapLocation(midX,midY); 
 			
-			if (dist < MAXMOVERANGE) {
-				MapLocation[] mines = rc.senseMineLocations(midLoc, MAXMOVERANGE, rc.getTeam().opponent());
+			if (dist < MAX_MOVE_RANGE) {
+				MapLocation[] mines = rc.senseMineLocations(midLoc, MAX_MOVE_RANGE, rc.getTeam().opponent());
 				if (mines.length > 0) {
 					// hard coded to move left
 					// not strictly tangent
-					whereToGo = new MapLocation(midX+MAXMOVERANGE, midY);
+					whereToGo = new MapLocation(midX+MAX_MOVE_RANGE, midY);
 				}								
 			} else {
 				whereToGo = midLoc;

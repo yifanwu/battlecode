@@ -14,6 +14,7 @@ import java.util.Random;
 import battlecode.common.*;
 
 public abstract class BaseBot {
+	protected static final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
 	protected static RobotController rc;
 	protected MapLocation myLoc;
