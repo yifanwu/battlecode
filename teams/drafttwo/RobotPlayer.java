@@ -3,6 +3,7 @@ package drafttwo;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.*;
 import java.util.logging.*;
 import battlecode.common.*;
 
@@ -38,23 +39,23 @@ public class RobotPlayer {
 		System.out.println(enemyHQ);
 		
 		closestEnemyNearHome = enemyHQ;
-		
-		BufferedWriter logger = new BufferedWriter(new FileWriter("/log/logging.txt"));		
-		
-		logger.write("started");
+
+		//TODO: figure out if code is needed for encampments 
 		
 		while(true) {
 
 			try{
+				if (!rc.isActive()) continue; //Don't execute anything if robot is not active
 				if (rc.getType() == RobotType.SOLDIER) {
 					int curID = rc.getRobot().getID();					
 					MapLocation curLoc = rc.getLocation();
-
+/*
 					switch(rc.readBroadcast(curID)){
 						case MOVEAWAY:
 							rc.move(rc.getLocation().directionTo(homeHQ).opposite());
 							break;						
 					}
+	*/				
 					
 					if (Clock.getRoundNum() < 50){
 						if (curID % 2 == 1) 
@@ -70,7 +71,7 @@ public class RobotPlayer {
 						}
 					}
 				} 
-				else {
+				else if (rc.getType() == RobotType.HQ){
 					Robot[] enemiesNearHome = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
 					MapLocation n = findClosest(homeHQ, enemiesNearHome);
 					if (n != null)
@@ -88,7 +89,7 @@ public class RobotPlayer {
 			rc.yield();
 		}
 		
-		logger.close();
+		//logger.close();
 		
 	}
 
@@ -148,11 +149,86 @@ public class RobotPlayer {
 			goToLocation(closestEnemyNearHome);
 		} 
 		else {
-			// else with probability lay mine 
-			if (Math.random() < 0.083) {
+			MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(homeHQ,
+					halfDistBetweenHQ, Team.NEUTRAL);
+			MapLocation[] defenders = getNearbyDefenders(homeHQ, halfDistBetweenHQ);
+			
+			boolean closest = false;
+			MapLocation dest = null;
+			// go to encampment if closest
+			if (defenders.length > 0) {
+				for (MapLocation eloc: nearbyEncampments) {
+					int i = nearestToLoc(defenders, eloc);
+					if (defenders[i].distanceSquaredTo(eloc) > rc.getLocation().distanceSquaredTo(eloc)) {
+						closest = true;
+						dest = eloc;
+						break;
+						//this soldier is closest -- needs to go to destination
+					}
+				}
+			}
+			if(closest) {
+				goToLocation(dest);
+				if (rc.senseEncampmentSquare(rc.getLocation())) {
+					rc.captureEncampment(RobotType.SUPPLIER); // make encampment a supplier
+				}
+			}
+			else if (rc.senseMine(rc.getLocation())==null) // place mine if possible
 				rc.layMine();
+			else { //move in random direction
+				Direction dir = Direction.values()[(int)(Math.random()*8)];
+				if(rc.canMove(dir)) {
+					rc.move(dir);
+            	}
+        	}
+		}
+	}
+	
+	//determines which x in arr is closest to target, breaking ties by choosing the lowest x and then y
+	private static int nearestToLoc(MapLocation arr[], MapLocation target) {
+		int best = -1;
+		int bestDist = -1;
+		for (int i=0;i<arr.length;i++) {
+			int dist = arr[i].distanceSquaredTo(target);
+			if ((bestDist == -1) || (bestDist > dist) || (bestDist == dist && arr[best].x > arr[i].x) ||
+					(bestDist == dist && arr[best].x == arr[i].x && arr[best].y > arr[i].y)) {
+				bestDist = dist;
+				best = i;
 			}
 		}
+		return best;
+	}
+	
+	private static boolean isDefender(int x) {
+		return (x % 2 == 0) ? true : false;
+	}
+	
+	private static void Log(String msg)
+	{
+		System.out.println("Turn " + Clock.getRoundNum() + ": " + msg);
+	}
+	
+	// gets defenders within radiusSquared of center using defender IDs
+	// may have a problem with bytecodes if there are too many allied robots
+	// does not give location of self
+	private static MapLocation[] getNearbyDefenders(MapLocation center, int radiusSquared) throws GameActionException {
+		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, center, radiusSquared, rc.getTeam());
+		List<MapLocation> defenders = new ArrayList<MapLocation>();
+		int numDefenders = 0;
+	
+		for (Robot x: allies) {
+			//canSense costs 15 bytecodes, but is safer?
+			if(rc.canSenseObject(x)) {
+				RobotInfo info = rc.senseRobotInfo(x);
+				if (info.type == RobotType.SOLDIER && isDefender(x.getID())) {	
+					defenders.add(info.location);
+					numDefenders++;
+				}
+			}
+		}
+		
+		MapLocation[] temp = new MapLocation[numDefenders]; //used to call toArray
+		return defenders.toArray(temp);
 	}
 
 	private static void offense(int idNum, MapLocation curLoc) throws GameActionException { 
@@ -270,7 +346,4 @@ public class RobotPlayer {
 		MapLocation rallyPoint = new MapLocation(x,y);
 		return rallyPoint;
 	}
-
-
-
 }
