@@ -9,7 +9,8 @@ public class SoldierDefenseBot extends BaseBot {
 	}
 	
 	public void run() throws GameActionException {
-		
+
+		rc.yield();
 	}
 	
 	/** 

@@ -20,6 +20,8 @@ public class HQBot extends BaseBot{
 				rc.spawn(dir);
 			}
 		}
+		
+		rc.yield();
 	}
 	
 	
