@@ -3,15 +3,15 @@ package multiBot;
 import battlecode.common.*;
 
 public abstract class BaseBot {
-	protected static final boolean VERBOSE = true; 
+	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
-	protected static RobotController rc;
+	static protected RobotController rc;
 	protected MapLocation myLoc;
 	protected GameConst GC;
 	protected static int[] ReservedChannels = {};
 	
 	public BaseBot(RobotController rc, GameConst GC) {
-		this.rc = rc;
+		rc = rc;
 		this.myLoc = rc.getLocation();
 		this.GC = GC;
 	}
@@ -95,9 +95,9 @@ public abstract class BaseBot {
 		return nearestMapLocation(locArr, target);
 	}
 	
-	private static void Log(String msg)
-	{
-		System.out.println("Turn " + Clock.getRoundNum() + ": " + msg);
-	}
+//	private static void Log(String msg)
+//	{
+//		System.out.println("Turn " + Clock.getRoundNum() + ": " + msg);
+//	}
 	
 }
