@@ -71,7 +71,7 @@ public class RobotPlayer {
 						}
 					}
 				} 
-				else {
+				else if (rc.getType() == RobotType.HQ){
 					Robot[] enemiesNearHome = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());
 					MapLocation n = findClosest(homeHQ, enemiesNearHome);
 					if (n != null)
