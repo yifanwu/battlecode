@@ -9,6 +9,7 @@ import battlecode.common.*;
 public class HQBot extends BaseBot{
 
 	private static final int MAX_SOLDIERS = 10000;
+	private static final int CLEAR_CHANNEL = -1;
 
 	private static int totalSoldiers = 0;
 	private static MapLocation enemyHQ;
@@ -19,7 +20,7 @@ public class HQBot extends BaseBot{
 	public HQBot(RobotController rc, GameConst GC) {
 		super(rc, GC);
 		//code to execute one time
-
+		mines = new ArrayList<MapLocation>();
 		enemyHQ = rc.senseEnemyHQLocation();
 		homeHQ = rc.senseHQLocation();
 		//halfDistBetweenHQ = DistBetweenHQ() / 4;
@@ -63,17 +64,34 @@ public class HQBot extends BaseBot{
 		*/	
 	}
 	
-	private static void updateMineLocations() {
+	//TODO: deal with turn 1 putting location 0 in
+	private static void updateMineLocations() throws GameActionException {
 		int newMine = rc.readBroadcast(MineReportChannel);
-		if (newMine != -1) {
-			
-			//add to list of mines
-			
-			
-			rc.broadcast(MineReportchannel, -1);
+		if (newMine != CLEAR_CHANNEL) {
+			MapLocation loc = decodeLoc(newMine);
+			if(!inMLArrayList(mines, loc)) { //add to list of mines if not in it
+				mines.add(loc);
+			}
+			rc.broadcast(MineReportChannel, CLEAR_CHANNEL);
 		}
-		//read all mine locations
-		//remove defused mines
+		
+		int defusedMine = rc.readBroadcast(MineDefuseChannel);
+		if (defusedMine != CLEAR_CHANNEL) {
+			mines.remove(decodeLoc(defusedMine));
+			rc.broadcast(MineDefuseChannel, CLEAR_CHANNEL);
+		}
+		
+		rc.broadcast(MineListenChannel, mines.size());
+		for (int i=0;i<mines.size();i++) {
+			rc.broadcast(MineListenChannel + i + 1, encodeLoc(mines.get(i)));
+		}
+	}
+	
+	private static boolean inMLArrayList(ArrayList<MapLocation> L, MapLocation loc) {
+		for(MapLocation x: L) {
+			if(loc.equals(x)) return true;
+		}
+		return false;
 	}
 	
 
