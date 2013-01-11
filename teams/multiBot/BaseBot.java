@@ -153,7 +153,7 @@ public abstract class BaseBot {
 		return msg*ENCODING_PRIME;
 	}
 	
-	//0 means error
+	//INVALID_CODE means error
 	protected static int decodeMsg(int msg) {
 		if (msg % ENCODING_PRIME != 0 || msg == 0) return INVALID_CODE;
 		else return msg/ENCODING_PRIME;
