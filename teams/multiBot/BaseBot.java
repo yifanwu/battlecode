@@ -4,9 +4,10 @@ import battlecode.common.*;
 
 public abstract class BaseBot {
 	private static final int MAX_SQUARE_RADIUS = 10000;
-	protected RobotController rc;
+	protected static RobotController rc;
 	protected MapLocation myLoc;
 	protected GameConst GC;
+	protected static int[] ReservedChannels = {};
 	
 	public BaseBot(RobotController rc, GameConst GC) {
 		this.rc = rc;
@@ -26,6 +27,7 @@ public abstract class BaseBot {
 				e.printStackTrace();
 			}
 			// End turn
+			System.out.println("Yielding now");
 			rc.yield();
 		}
 	}
