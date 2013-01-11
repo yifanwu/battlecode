@@ -230,7 +230,7 @@ public class RobotPlayer {
 			rc.broadcast(channel, orig+5);
 		}
 		else { //weighted extra
-			rc.broadcast(channel, (int)(RandomInt.nextInt()));
+			rc.broadcast(channel, RandomInt.nextInt());
 		}	
 	}
 	

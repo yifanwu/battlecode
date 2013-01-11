@@ -27,7 +27,8 @@ public class RobotPlayer {
 					br = new SoldierDefenseBot(rc, GC);			
 					break;
 				case OFFENSE:
-					br = new SoldierOffenseBot(rc, GC);	
+					//TODO: hack
+					br = new SoldierDefenseBot(rc, GC);	
 					break;					
 			}					
 			break;
