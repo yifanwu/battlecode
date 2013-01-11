@@ -32,6 +32,8 @@ public class RobotPlayer {
 	private static int ChannelGroup = 0;
 	private static int NumSavedChannels = 25;
 	private static Queue<Integer> SavedChannels = new LinkedList<Integer>();
+	private static int NumJamMessages = 10;
+	private static Random RandomInt = new Random();
 
 	//private static lazyCycle //TODO: lazy!
 
@@ -121,14 +123,13 @@ public class RobotPlayer {
 			
 			/* 
 			 * Kevin's Offensive Broadcasting strategy
-			 * Sweep 2500 channels each turn
-			 * Keep a record of the last 25 channels that have been found with non-zero data
+			 * Sweep a bunch of channels each turn
+			 * Keep a record of the last NumSavedChannels channels that have been found with non-zero data
 			 * JAM with various messages
 			 */
 			
 			channelSweep();
-			
-			
+			channelJam();
 			
 			/*
 			 * Broadcasting scheme
@@ -165,7 +166,7 @@ public class RobotPlayer {
 		}
 	}
 	
-	//Sweep a portion of the open channels, looking for ones that are in use
+	//Sweep a portion of the open channels, looking for ones that are in use, adding them to SavedChannels
 	private static void channelSweep() throws GameActionException {
 		for(int i=(int)(GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup)/NumChannelGroups));
 			i<=GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup + 1)/NumChannelGroups);
@@ -181,10 +182,52 @@ public class RobotPlayer {
 			}
 		}
 		
-		if(++ChannelGroup > 3)
+		if(++ChannelGroup >= NumChannelGroups)
 			ChannelGroup = 0;
 	}
 	
+	//Jams all channels in SavedChannels
+	private static void channelJam() throws GameActionException {
+		for(int channel: SavedChannels ) {
+			singleChannelJam(channel);
+		}
+	}
+	
+	//Jams a single channel with a variety of messages
+	//Good for testing robustness to enemy jamming (i.e. use it on reserved channels)
+	private static void singleChannelJam(int channel) throws GameActionException {
+		int x = Clock.getRoundNum() % NumJamMessages;
+		int orig = rc.readBroadcast(channel);
+		if(x == 0) {
+			rc.broadcast(channel, -1);
+		}
+		else if (x == 1) {
+			rc.broadcast(channel, orig-1);
+		}
+		else if (x == 2) {
+			rc.broadcast(channel, orig+1);	
+		}
+		else if (x == 3) {
+			rc.broadcast(channel, 0);
+		}
+		else if (x == 4) {
+			rc.broadcast(channel, Integer.MAX_VALUE);
+		}
+		else if (x == 5) {
+			rc.broadcast(channel, Integer.MIN_VALUE);
+		}
+		else if (x == 6) {
+			rc.broadcast(channel, orig-5);
+		}
+		else if (x == 7) {
+			rc.broadcast(channel, orig+5);
+		}
+		else { //weighted extra
+			rc.broadcast(channel, (int)(RandomInt.nextInt()));
+		}	
+	}
+	
+	//Checks if channel c is a reserved channel
 	private static boolean isReservedChannel(int c) {
 		for(int x: ReservedChannels) {
 			if(c == x)
@@ -192,7 +235,6 @@ public class RobotPlayer {
 		}
 		return false;
 	}
-	
 
 	/* 
 	 * restricted to the home half
