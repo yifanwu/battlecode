@@ -8,6 +8,7 @@ import java.util.logging.*;
 import battlecode.common.*;
 
 public class RobotPlayer {
+	//TODO: refactor static variables to ProperCasing
 	private static final int MAX_SOLDIERS = 10000;
 	private static final int MOVEAWAY = 1;
 	private static final int MAXMOVERANGE = 10; //TODO: try to tune this
@@ -16,12 +17,21 @@ public class RobotPlayer {
 	private static MapLocation defenseRallyPoint = null; 
 	private static MapLocation enemyHQ = null;
 	private static MapLocation homeHQ = null;
-	//	// private static Robot[] enemiesNearHome = {}; //TODO: needed?
+	// private static Robot[] enemiesNearHome = {}; //TODO: needed?
 	private static MapLocation closestEnemyNearHome = null;
 	private static MapLocation closestFarEnemy = null;
 	private static int totalSoldiers = 0; 
 	private static int halfDistBetweenHQ = -1;  //TODO: check if this is actually half
 	private static boolean isFarEnemyFound = false;
+	private static boolean Initialized = false;
+	
+	private static int[] ReservedChannels = {};
+	
+	//HQ variables
+	private static int NumChannelGroups = 4;
+	private static int ChannelGroup = 0;
+	private static int NumSavedChannels = 25;
+	private static Queue<Integer> SavedChannels = new LinkedList<Integer>();
 
 	//private static lazyCycle //TODO: lazy!
 
@@ -39,11 +49,8 @@ public class RobotPlayer {
 		System.out.println(enemyHQ);
 		
 		closestEnemyNearHome = enemyHQ;
-
-		//TODO: figure out if code is needed for encampments 
 		
 		while(true) {
-
 			try{
 				if (!rc.isActive()) continue; //Don't execute anything if robot is not active
 				if (rc.getType() == RobotType.SOLDIER) {
@@ -84,20 +91,17 @@ public class RobotPlayer {
 				System.out.println("caught exception before it killed us:");
 				e.printStackTrace();
 			}
-			
-			// CRUCIAL 
-			rc.yield();
-		}
-		
-		//logger.close();
-		
-	}
-
-	private static int encodeLoc(MapLocation loc) {
-		// assuming maximum is capped at 1000
-		return (loc.x * 1000 + loc.y);		
+			 
+			rc.yield(); // CRUCIAL
+		}		
 	}
 	
+
+	private static int encodeLoc(MapLocation loc) {
+		return (loc.x * 1000 + loc.y); // assuming maximum is capped at 1000		
+	}
+	
+	//TODO: refactor to "decodeLoc" for consistency
 	private static MapLocation decodeMsg (int msg) {
 		int y = msg % 1000;
 		int x = msg/1000;
@@ -106,6 +110,7 @@ public class RobotPlayer {
 	}
 
 	private static void hqCode() throws GameActionException{
+		HQInitialize();
 		if (rc.isActive()) {
 			// Spawn a soldier
 			Direction dir = getDirForSpawn(enemyHQ);
@@ -113,8 +118,20 @@ public class RobotPlayer {
 				rc.spawn(dir);
 				totalSoldiers++;
 			}
+			
+			/* 
+			 * Kevin's Offensive Broadcasting strategy
+			 * Sweep 2500 channels each turn
+			 * Keep a record of the last 25 channels that have been found with non-zero data
+			 * JAM with various messages
+			 */
+			
+			channelSweep();
+			
+			
+			
 			/*
-			 * Broad casting scheme
+			 * Broadcasting scheme
 			 * 1: 
 			 * 2: offense
 			 */
@@ -137,6 +154,45 @@ public class RobotPlayer {
 		
 		
 	}
+	
+	//Initialize variables for HQ
+	private static void HQInitialize() {
+		if (!Initialized) {
+			NumChannelGroups = (int)(GameConstants.BROADCAST_MAX_CHANNELS/(3 + GameConstants.BROADCAST_READ_COST));
+			NumSavedChannels =
+				(int)(Math.min(GameConstants.BROADCAST_MAX_CHANNELS/(GameConstants.BROADCAST_SEND_COST), 50));
+			Initialized = true;
+		}
+	}
+	
+	//Sweep a portion of the open channels, looking for ones that are in use
+	private static void channelSweep() throws GameActionException {
+		for(int i=(int)(GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup)/NumChannelGroups));
+			i<=GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup + 1)/NumChannelGroups);
+			i++) {
+			if(isReservedChannel(i))
+				continue;
+			if (rc.readBroadcast(i) != 0) {
+				SavedChannels.add(i);
+			}
+
+			while (SavedChannels.size() > NumSavedChannels) {
+				SavedChannels.remove();
+			}
+		}
+		
+		if(++ChannelGroup > 3)
+			ChannelGroup = 0;
+	}
+	
+	private static boolean isReservedChannel(int c) {
+		for(int x: ReservedChannels) {
+			if(c == x)
+				return true;
+		}
+		return false;
+	}
+	
 
 	/* 
 	 * restricted to the home half
@@ -188,7 +244,7 @@ public class RobotPlayer {
 		}
 	}
 	
-	//determines which x in arr is closest to target, breaking ties by choosing the lowest x and then y
+	//determines which location in arr is closest to target, breaking ties by choosing the lowest x and then y
 	private static int nearestToLoc(MapLocation arr[], MapLocation target) {
 		int best = -1;
 		int bestDist = -1;
@@ -271,6 +327,7 @@ public class RobotPlayer {
 		MapLocation closestEnemy = null;
 
 		for (Robot r : robots) {
+			//TODO: probably need canSenseRobotInfo first
 			RobotInfo aRobotInfo = rc.senseRobotInfo(r);
 			int dist = aRobotInfo.location.distanceSquaredTo(rc.getLocation());
 
