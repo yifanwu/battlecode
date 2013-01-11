@@ -25,7 +25,7 @@ public abstract class BaseBot {
 	protected static int MineListenChannel = 5024;
 	protected static int MineReportChannel = 2073;
 	protected static int MineDefuseChannel = 2074;
-	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel};
+	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel, MineListenChannel + 2};
 	protected static final int ENCODING_PRIME = 179;
 	protected static final int INVALID_CODE = 0;
 	
@@ -210,6 +210,14 @@ public abstract class BaseBot {
 		
 		if(++ChannelGroup >= NumChannelGroups)
 			ChannelGroup = 0;
+	}
+	
+	
+	//Jams reserved channels--for testing purposes
+	protected static void reserveChannelJam() throws GameActionException {
+		for(int channel: ReservedChannels) {
+			singleChannelJam(channel);
+		}
 	}
 	
 	/* Offensive broadcasting strategy 

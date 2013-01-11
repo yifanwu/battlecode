@@ -29,6 +29,8 @@ public class HQBot extends BaseBot{
 		//code to execute for the whole match
 		//TODO: dummy right now
 		
+		reserveChannelJam();
+		
 		if (rc.isActive()) {
 			// Spawn a soldier
 			Direction dir = getDirForSpawn(enemyHQ);
@@ -40,8 +42,9 @@ public class HQBot extends BaseBot{
 	
 		updateMineLocations();
 		
-/*
- * test code for mine communication
+//		reserveChannelJam(); //jamming makes it so no information gets through
+
+// test code for mine communication
 		if (Clock.getRoundNum() == 10) mineReport(rc.senseEnemyHQLocation());
 		if (Clock.getRoundNum() == 12) mineReport(rc.senseHQLocation());
 		if (Clock.getRoundNum() == 14) mineDefuseReport(rc.senseHQLocation());
@@ -56,7 +59,7 @@ public class HQBot extends BaseBot{
 				System.out.println(a[i].toString());
 			}
 		}
-*/	
+
 		
 		/*
 		 * Broadcasting scheme
