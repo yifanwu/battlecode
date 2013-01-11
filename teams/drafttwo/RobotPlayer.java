@@ -39,6 +39,8 @@ public class RobotPlayer {
 		System.out.println(enemyHQ);
 		
 		closestEnemyNearHome = enemyHQ;
+
+		//TODO: figure out if code is needed for encampments 
 		
 		while(true) {
 
@@ -54,6 +56,7 @@ public class RobotPlayer {
 							break;						
 					}
 	*/				
+					
 					if (Clock.getRoundNum() < 50){
 						if (curID % 2 == 1) 
 							goToLocation(offenseRallyPoint);
@@ -149,21 +152,51 @@ public class RobotPlayer {
 			MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(homeHQ,
 					halfDistBetweenHQ, Team.NEUTRAL);
 			MapLocation[] defenders = getNearbyDefenders(homeHQ, halfDistBetweenHQ);
-
-			// go to encampments
-			// 
-			// place mine if possible
-            if (rc.senseMine(rc.getLocation())==null)
-            	rc.layMine();
-            else {
-            	//move in random direction
-                Direction dir = Direction.values()[(int)(Math.random()*8)];
-                if(rc.canMove(dir)) {
-                  rc.move(dir);
-                }
-            }
-
+			
+			boolean closest = false;
+			MapLocation dest = null;
+			// go to encampment if closest
+			if (defenders.length > 0) {
+				for (MapLocation eloc: nearbyEncampments) {
+					int i = nearestToLoc(defenders, eloc);
+					if (defenders[i].distanceSquaredTo(eloc) > rc.getLocation().distanceSquaredTo(eloc)) {
+						closest = true;
+						dest = eloc;
+						break;
+						//this soldier is closest -- needs to go to destination
+					}
+				}
+			}
+			if(closest) {
+				goToLocation(dest);
+				if (rc.senseEncampmentSquare(rc.getLocation())) {
+					rc.captureEncampment(RobotType.SUPPLIER); // make encampment a supplier
+				}
+			}
+			else if (rc.senseMine(rc.getLocation())==null) // place mine if possible
+				rc.layMine();
+			else { //move in random direction
+				Direction dir = Direction.values()[(int)(Math.random()*8)];
+				if(rc.canMove(dir)) {
+					rc.move(dir);
+            	}
+        	}
 		}
+	}
+	
+	//determines which x in arr is closest to target, breaking ties by choosing the lowest x and then y
+	private static int nearestToLoc(MapLocation arr[], MapLocation target) {
+		int best = -1;
+		int bestDist = -1;
+		for (int i=0;i<arr.length;i++) {
+			int dist = arr[i].distanceSquaredTo(target);
+			if ((bestDist == -1) || (bestDist > dist) || (bestDist == dist && arr[best].x > arr[i].x) ||
+					(bestDist == dist && arr[best].x == arr[i].x && arr[best].y > arr[i].y)) {
+				bestDist = dist;
+				best = i;
+			}
+		}
+		return best;
 	}
 	
 	private static boolean isDefender(int x) {
@@ -177,24 +210,24 @@ public class RobotPlayer {
 	
 	// gets defenders within radiusSquared of center using defender IDs
 	// may have a problem with bytecodes if there are too many allied robots
+	// does not give location of self
 	private static MapLocation[] getNearbyDefenders(MapLocation center, int radiusSquared) throws GameActionException {
 		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, center, radiusSquared, rc.getTeam());
 		List<MapLocation> defenders = new ArrayList<MapLocation>();
-		
-		Log("My location: " + rc.getLocation().x + " " + rc.getLocation().y);
-		
+		int numDefenders = 0;
+	
 		for (Robot x: allies) {
 			//canSense costs 15 bytecodes, but is safer?
 			if(rc.canSenseObject(x)) {
 				RobotInfo info = rc.senseRobotInfo(x);
-				if (info.type == RobotType.SOLDIER && isDefender(x.getID())) {
+				if (info.type == RobotType.SOLDIER && isDefender(x.getID())) {	
 					defenders.add(info.location);
-					System.out.println(info.location.x + " " + info.location.y);
+					numDefenders++;
 				}
 			}
 		}
 		
-		MapLocation[] temp = new MapLocation[1]; //used to call toArray
+		MapLocation[] temp = new MapLocation[numDefenders]; //used to call toArray
 		return defenders.toArray(temp);
 	}
 
