@@ -17,12 +17,12 @@ public class SoldierDefenseBot extends BaseBot {
 	
 	public void run() throws GameActionException {
 		
-		MapLocation nearestEnemyBot = super.findClosestEnemyRobot();
+		MapLocation nearestEnemyBot = findClosestEnemyRobot();
 		
-		if (nearestEnemyBot.distanceSquaredTo(homeHQ) < DEFENSE_RANGE) {
+		if (nearestEnemyBot != null && nearestEnemyBot.distanceSquaredTo(homeHQ) < DEFENSE_RANGE) {
 			defenseAttack(nearestEnemyBot);
-		} else if (super.myLoc.distanceSquaredTo(homeHQ) > HOME_RANGE) {
-			defenseGoHomeAndJam();
+		} else if (myLoc.distanceSquaredTo(homeHQ) > HOME_RANGE) {
+			defenseGoHome();
 		} else {
 			layDefenseMines();
 		}
@@ -41,7 +41,7 @@ public class SoldierDefenseBot extends BaseBot {
 				System.out.println("Mine laid!!!");
 			}
 		} else {
-			defenseGoHomeAndJam();
+			defenseGoHome();
 		}
 	}
 
@@ -51,10 +51,9 @@ public class SoldierDefenseBot extends BaseBot {
 		rc.move(dir);
 	}
 	
-	public void defenseGoHomeAndJam() throws GameActionException {
+	public void defenseGoHome() throws GameActionException {
 		Direction dirEnemy = homeHQ.directionTo(enemyHQ);		
-		Direction dir = super.availableDirection(homeHQ.add(dirEnemy, DEFENSE_RANGE));
-		super.sweepAndJam();
+		Direction dir = availableDirection(homeHQ.add(dirEnemy, DEFENSE_RANGE));
 		rc.move(dir);		
 	}
 	

@@ -95,6 +95,7 @@ public abstract class BaseBot {
         return closestEncampment;
     }
 	
+	//returns null if none found
 	protected MapLocation findClosestEnemyRobot() throws GameActionException {
         Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,MAX_SQUARE_RADIUS, rc.getTeam().opponent());        
         MapLocation closestEnemy = nearestBotLocation(enemyRobots, myLoc);
@@ -103,6 +104,7 @@ public abstract class BaseBot {
     }
 	
 	//finds the index of the item in arr that is closest to target
+	//returns null if array is empty
 	protected MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
 		int best = -1;
 		int bestDist = -1;
@@ -121,6 +123,7 @@ public abstract class BaseBot {
 		}
 	}
 	
+	//returns null if none found
 	protected MapLocation nearestBotLocation(Robot robots[], MapLocation target) throws GameActionException {
 		MapLocation[] locArr = new MapLocation[robots.length];  
 		
