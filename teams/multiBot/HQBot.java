@@ -32,11 +32,22 @@ public class HQBot extends BaseBot{
 		reserveChannelJam();
 		
 		if (rc.isActive()) {
-			// Spawn a soldier
-			Direction dir = getDirForSpawn(enemyHQ);
-			if (rc.canMove(dir) && (totalSoldiers < MAX_SOLDIERS)) {
-				rc.spawn(dir);
-				totalSoldiers++;
+			if (rc.getTeamPower() < 10) {
+				if (!rc.hasUpgrade(Upgrade.FUSION)) {
+					rc.researchUpgrade(Upgrade.FUSION);
+				}
+				else if (!rc.hasUpgrade(Upgrade.PICKAXE)) {
+					rc.researchUpgrade(Upgrade.PICKAXE);
+				}
+				else rc.researchUpgrade(Upgrade.NUKE);
+			}
+			else {
+				// Spawn a soldier
+				Direction dir = getDirForSpawn(enemyHQ);
+				if (rc.canMove(dir) && (totalSoldiers < MAX_SOLDIERS)) {
+					rc.spawn(dir);
+					totalSoldiers++;
+				}
 			}
 		}
 	

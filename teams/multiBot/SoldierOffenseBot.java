@@ -74,9 +74,9 @@ public class SoldierOffenseBot extends BaseBot{
 	 * @throws GameActionException
 	 */
 	protected void moveToLocAndDiffuseMine(MapLocation destination) throws GameActionException {
-		Direction myDir = super.availableDirection(destination);
+		Direction myDir = availableDirection(destination);
 		MapLocation nextLocation = rc.getLocation().add(myDir);
-		MapLocation[] enemyMines = super.mineListen();
+		MapLocation[] enemyMines = mineListen();
 
 		int mineCounter = 0;
 		// avoid stepping into known buggy places 
