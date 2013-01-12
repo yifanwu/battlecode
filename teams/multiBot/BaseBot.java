@@ -58,6 +58,7 @@ public abstract class BaseBot {
 		while(true) {
 			try {
 				// Execute turn
+				myLoc = rc.getLocation();
 				run();
 				
 			} catch (Exception e) {
@@ -89,11 +90,14 @@ public abstract class BaseBot {
         
         return lookingAtCurrently;
 	}
+
+	//TODO: Can't walk on friendly encampments???
 	
 	protected MapLocation findClosestEnemyEncampment() throws GameActionException {
 		MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(myLoc, MAX_SQUARE_RADIUS, Team.NEUTRAL);        
         MapLocation closestEncampment = nearestMapLocation(nearbyEncampments, myLoc);
-        
+        //TODO: check if nearbyencampments views enemies
+
         return closestEncampment;
     }
 	
