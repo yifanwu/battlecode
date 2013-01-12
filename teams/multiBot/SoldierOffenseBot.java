@@ -32,6 +32,10 @@ public class SoldierOffenseBot extends BaseBot{
 	
 	private void offense() throws GameActionException {
 	
+		if (job != null && myLoc.equals(job)) {
+			job = null;
+			hasJob = false;
+		}
 		if (rc.senseEncampmentSquare(rc.getLocation())) {		
 			RobotType encampmentType = chooseEncampmentType();
 			
@@ -43,7 +47,10 @@ public class SoldierOffenseBot extends BaseBot{
 			MapLocation closestEncampment = findClosestEnemyEncampment();
 			MapLocation closestEnemyRobot = findClosestEnemyRobot();
 			
-			if (closestEncampment != null) {
+			if (hasJob) {
+				moveToLocAndDefuseMine(job);
+			}
+			else if (closestEncampment != null) {
 				moveToLocAndDefuseMine(closestEncampment);
 			} else if (closestEnemyRobot != null) {
 				moveToLocAndDefuseMine(closestEnemyRobot);
@@ -59,6 +66,11 @@ public class SoldierOffenseBot extends BaseBot{
 	}
 	
 	//TODO: offensive algorithm
+	
+	
+	
+	
+	
 	
 	
 	//Moves based on the encampments and allied units seen, as well as their distances

@@ -17,6 +17,7 @@ public abstract class BaseBot {
 	
 	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
+	protected static final int GO_CODE = -27;
 	protected static RobotController rc;
 	protected static MapLocation myLoc;
 	//protected GameConst GC;
@@ -33,6 +34,8 @@ public abstract class BaseBot {
 	protected static final int ENCODING_PRIME = 24631;
 	protected static final int INVALID_CODE = 0;
 	protected static MapLocation[] enemyMines = new MapLocation[0];
+	protected static boolean hasJob = false;
+	protected static MapLocation job;
 	
 	//Jamming variables
 	protected static int NumChannelGroups = 4;
@@ -188,6 +191,31 @@ public abstract class BaseBot {
 		}
 		return count;
 	}
+	
+	
+	//moves towards and captures an encampment if needed
+	protected static boolean moveToEncampmentIfNeeded() {
+		
+		return false;
+	}
+	
+	protected static int encampmentListen() {	
+		
+		return 0;
+	}
+	
+	//find number of encampments
+	//one channel per encampment
+	//GO_CODE if should go
+	//ID otherwise
+	
+	//fidelity function
+	
+	
+	
+	
+	
+	
 	
 	//Reports location of enemy mine in encoded form
 	protected static void mineReport(MapLocation loc) throws GameActionException {
