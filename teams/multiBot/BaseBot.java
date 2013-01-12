@@ -14,10 +14,11 @@ import java.util.Random;
 import battlecode.common.*;
 
 public abstract class BaseBot {
+	
 	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
 	protected static RobotController rc;
-	protected MapLocation myLoc;
+	protected static MapLocation myLoc;
 	//protected GameConst GC;
 	protected MapLocation enemyHQ;
 	protected MapLocation homeHQ;
@@ -43,7 +44,7 @@ public abstract class BaseBot {
 	
 	public BaseBot(RobotController myRc) {
 		rc = myRc;
-		this.myLoc = rc.getLocation();
+		this.myLoc = rc.getLocation(); //TODO: this is not updated each turn!!
 		enemyHQ = rc.senseEnemyHQLocation();
 		homeHQ = rc.senseHQLocation();
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
@@ -68,7 +69,8 @@ public abstract class BaseBot {
 		}
 	}
 	
-	protected Direction availableDirection(MapLocation destination) {
+	
+	protected static Direction availableDirection(MapLocation destination) {
 		Direction lookingAtCurrently = null;
 		
 		int dist = rc.getLocation().distanceSquaredTo(destination);
@@ -332,9 +334,55 @@ public abstract class BaseBot {
 		return false;
 	}
 	
+	
+	
+	/**
+	 * Diffuse mines 
+	 * Update: also avoid if next to enemy location
+	 * @param destination
+	 * @throws GameActionException
+	 */
+	protected static void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
+		Direction myDir = availableDirection(destination);
+		if (myDir == null)
+			return; //TODO: what if myDir is null
+		
+		if(!defuseMineIfThere(myDir) && rc.canMove(myDir)) {
+			rc.move(myDir);
+		}
+	}
+	
+	//returns true if defused mine (don't move)
+	//returns false if okay to move (isActive)
+	//assumes isActive at start
+	protected static boolean defuseMineIfThere(Direction dir) throws GameActionException {
+		MapLocation nextLocation = rc.getLocation().add(dir);
+		mineListen();
+
+		for (MapLocation l: enemyMines) {
+			if (l != null && l.equals(nextLocation)) {
+				rc.defuseMine(nextLocation);
+				while (!rc.isActive()) {
+					rc.yield();
+				}
+				mineDefuseReport(rc.getLocation());
+				return false; //can move, since will be active
+			}
+		}
+		
+		if (rc.senseMine(nextLocation) == Team.NEUTRAL) {
+			//System.out.println(myLoc.toString() + " | mine loc: " + nextLocation.toString());
+			rc.defuseMine(nextLocation);
+			return true;
+		}
+		
+		return false;
+	}
+	
 	protected static void Log(String msg)
 	{
 		System.out.println("Turn " + Clock.getRoundNum() + ": " + msg);
 	}	
 	
 }
+

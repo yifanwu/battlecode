@@ -6,59 +6,77 @@ import battlecode.common.*;
 
 public class SoldierDefenseBot extends BaseBot {
 	
-	public static final int DEFENSE_RANGE = 36; 
-	public static final int HOME_RANGE = 49;
-	public static final int HOME_SPACE = 9;
-	public static final int MIN_ROUNDS_BEFORE_MINE = 100;
-	
-	public SoldierDefenseBot (RobotController rc) {
+	protected static int defenseRange = 36; 
+	protected static int homeRange = 49;
+	protected static final int HOME_SPACE = 9;
+	protected static final int MIN_ROUNDS_BEFORE_MINE = 100;
+
+
+	public SoldierDefenseBot (RobotController rc) { //code for initializing
 		super(rc);
+		homeRange = (int)Math.min(rc.getMapWidth(), rc.getMapHeight())/2;
+		defenseRange = homeRange - 2;
 	}
 	
 	public void run() throws GameActionException {
-		
-		MapLocation nearestEnemyBot = findClosestEnemyRobot();
-		
-		if (nearestEnemyBot != null && nearestEnemyBot.distanceSquaredTo(homeHQ) < DEFENSE_RANGE) {
-			defenseAttack(nearestEnemyBot);
-		} else if (myLoc.distanceSquaredTo(homeHQ) > HOME_RANGE) {
-			defenseGoHome();
-		} else {
-			layDefenseMines();
+		if(rc.isActive()) {
+			MapLocation nearestEnemyBot = findClosestEnemyRobot();
+			
+			if (nearestEnemyBot != null && nearestEnemyBot.distanceSquaredTo(homeHQ) < defenseRange) {
+				defenseAttack(nearestEnemyBot); //attack enemies if nearby
+			} else if (myLoc.distanceSquaredTo(homeHQ) > homeRange) {
+				moveToLocAndDefuseMine(homeHQ); //return home
+			} else {
+				layDefenseMines();
+			}
 		}
 	}
+	//TODO: defense should not die to neutral mines
 	
 	private void layDefenseMines() throws GameActionException {
 		// TODO figure out a way to communicate
-		MapLocation[] ourMines = rc.senseMineLocations(super.myLoc, HOME_RANGE, rc.getTeam());
-		boolean isInPosition = (2*super.myLoc.x+super.myLoc.y)%5 == 0;
-		boolean isNotLaid = !Arrays.asList(ourMines).contains(super.myLoc);
-		boolean isNotTooClose = !(super.myLoc.distanceSquaredTo(homeHQ) < HOME_SPACE);  
-		boolean isNotTooSoon = !(Clock.getRoundNum() < MIN_ROUNDS_BEFORE_MINE);
-		if (isInPosition && isNotLaid && isNotTooClose && isNotTooSoon) {
-			rc.layMine();		
-			for(int i=0; i<200;i++) {
-				System.out.println("Mine laid!!!");
-			}
+
+		//wrong spacing
+		boolean isInPosition = (myLoc.y % 3 == myLoc.x % 2); //(2*myLoc.x+myLoc.y)%5 == 0;
+		
+		if (Clock.getRoundNum() > MIN_ROUNDS_BEFORE_MINE && isInPosition && (rc.senseMine(myLoc) == null)) {
+			rc.layMine();
 		} else {
-			defenseGoHome();
+			defensePatrol();
 		}
 	}
 
 	public void defenseAttack(MapLocation enemyBot) throws GameActionException {
 		Direction dir = availableDirection(enemyBot);
 		//TODO: add sophistication
-		if (rc.canMove(dir)) {
-			rc.move(dir);
-		}
+		moveToLocAndDefuseMine(myLoc.add(dir, 1));
 	}
 	
-	public void defenseGoHome() throws GameActionException {
-		Direction dirEnemy = homeHQ.directionTo(enemyHQ);		
-		Direction dir = availableDirection(homeHQ.add(dirEnemy, DEFENSE_RANGE));
-		if (rc.canMove(dir)) {
-			rc.move(dir);
+	protected void defensePatrol() throws GameActionException {
+		//TODO: implement smarter mining if desired
+		
+        Direction dir = Direction.values()[(int)(Math.random()*8)];
+        moveToLocAndDefuseMine(myLoc.add(dir,1));
+        
+		/*
+		MapLocation[] nearbyMines = rc.senseMineLocations(myLoc, 1, rc.getTeam());
+		MapLocation dest;
+		if(nearbyMines.length == 0) {
+			if(myLoc.y % 3 == 1) ; // go to lower y
 		}
+		else if (nearbyMines.length == 1) {
+			if (nearbyMines[0].x == myLoc.x);
+		}
+		else if (nearbyMines.length == 2) { //todo: fix
+			MapLocation wrongSide = nearbyMines[0].add(nearbyMines[0].directionTo(nearbyMines[1]), 1);
+			dest = wrongSide.add(wrongSide.directionTo(myLoc), 1);
+		}
+		else { //area is all mined up
+			dest = enemyHQ; 
+		}
+*/
+		//moveToLocAndDefuseMine(dest);
 	}
 	
+		
 }
