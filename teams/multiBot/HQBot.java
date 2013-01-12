@@ -39,7 +39,10 @@ public class HQBot extends BaseBot{
 				senseAllEncampments();
 				sendRobotToNeutralEncampment();
 			}
+
+			//System.out.println(GameConstants.UNIT_ENERGON_UPKEEP);
 			if (rc.getTeamPower() < 10) {
+                rc.setIndicatorString(0, "Researching!");
 				if (!rc.hasUpgrade(Upgrade.FUSION)) {
 					rc.researchUpgrade(Upgrade.FUSION);
 				}

@@ -14,7 +14,7 @@ public class SoldierDefenseBot extends BaseBot {
 
 	public SoldierDefenseBot (RobotController rc) { //code for initializing
 		super(rc);
-		homeRange = (int)Math.min(rc.getMapWidth(), rc.getMapHeight())/2;
+		homeRange = (rc.getMapWidth()+rc.getMapHeight())/2;
 		defenseRange = homeRange - 2;
 	}
 	
@@ -31,13 +31,11 @@ public class SoldierDefenseBot extends BaseBot {
 			}
 		}
 	}
-	//TODO: defense should not die to neutral mines
 	
 	private void layDefenseMines() throws GameActionException {
 		// TODO figure out a way to communicate
 
-		//wrong spacing
-		boolean isInPosition = (myLoc.y % 3 == myLoc.x % 2); //(2*myLoc.x+myLoc.y)%5 == 0;
+		boolean isInPosition = (myLoc.y+2*(myLoc.x%2) )%4 == 0; //(2*myLoc.x+myLoc.y)%5 == 0;
 		
 		if (Clock.getRoundNum() > MIN_ROUNDS_BEFORE_MINE && isInPosition && (rc.senseMine(myLoc) == null)) {
 			rc.layMine();

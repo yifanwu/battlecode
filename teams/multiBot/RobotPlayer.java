@@ -4,7 +4,7 @@ import battlecode.common.*;
 
 public class RobotPlayer {
 	public enum SoldierType {
-		OFFENSE,DEFENSE
+		OFFENSE, DEFENSE, ENGULF
 	}
 	
 	public static void run(RobotController rc) {
@@ -22,12 +22,15 @@ public class RobotPlayer {
 			mySoldierType = SoldierType.OFFENSE;
 			switch(mySoldierType) {
 				case DEFENSE:
-					//DEFENSE IS STILL BUG
 					br = new SoldierDefenseBot(rc);
 					//System.out.println("defense bot called");
 					break;
 				case OFFENSE:
 					br = new SoldierOffenseBot(rc);	
+					//System.out.println("offense bot called");
+					break;
+				case ENGULF:
+					br = new EngulferSoldier(rc);	
 					//System.out.println("offense bot called");
 					break;
 				default:
