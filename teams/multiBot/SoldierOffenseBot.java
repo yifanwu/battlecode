@@ -50,10 +50,21 @@ public class SoldierOffenseBot extends BaseBot{
 		}
 		
 		// report the mine to HQ
-		if(rc.senseMine(myLoc) == rc.getTeam().opponent()) {
-			mineReport(myLoc);
+		if(rc.senseMine(rc.getLocation()) == rc.getTeam().opponent()) {
+			mineReport(rc.getLocation());
 		}
 	}
+	
+	
+	protected static void slopeFieldGenerate() throws GameActionException {
+		MapLocation[] encampments = rc.senseEncampmentSquares(rc.getLocation(), 10000, Team.NEUTRAL);
+		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 10000, rc.getTeam());
+		//MapLocation[] enemies = rc.senseNearbyGameObjects(Robot.class, rc.getTeam());
+		
+		//rc.senseNearbyObjects();
+	}
+	
+	//TODO: method to update encampments
 	
 	/** 
 	 * decides on the encampment type
@@ -68,35 +79,5 @@ public class SoldierOffenseBot extends BaseBot{
 			return encampmentTypes[0];
 		}
 	}
-	
-	/**
-	 * Diffuse mines 
-	 * Update: also avoid if next to enemy location
-	 * @param destination
-	 * @throws GameActionException
-	 */
-	protected void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
-		Direction myDir = availableDirection(destination);
-		MapLocation nextLocation = rc.getLocation().add(myDir);
-		mineListen();
-
-		for (MapLocation l: enemyMines) {
-			if (l != null && l.equals(nextLocation)) {
-				rc.defuseMine(nextLocation);
-				while (!rc.isActive()) {
-					rc.yield();
-				}
-				mineDefuseReport(myLoc);
-				return;
-			}
-		}			
-		if (rc.senseMine(nextLocation) != null) {
-			rc.defuseMine(nextLocation);
-		} else {
-			if (rc.canMove(myDir)) {
-				rc.move(myDir);
-			}
-		}
-	}		
 	
 }

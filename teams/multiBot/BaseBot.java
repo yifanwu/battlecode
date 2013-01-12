@@ -17,7 +17,7 @@ public abstract class BaseBot {
 	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
 	protected static RobotController rc;
-	protected MapLocation myLoc;
+	protected static MapLocation myLoc;
 	//protected GameConst GC;
 	protected MapLocation enemyHQ;
 	protected MapLocation homeHQ;
@@ -68,7 +68,8 @@ public abstract class BaseBot {
 		}
 	}
 	
-	protected Direction availableDirection(MapLocation destination) {
+	
+	protected static Direction availableDirection(MapLocation destination) {
 		Direction lookingAtCurrently = null;
 		
 		int dist = rc.getLocation().distanceSquaredTo(destination);
@@ -330,6 +331,41 @@ public abstract class BaseBot {
 				return true;
 		}
 		return false;
+	}
+	
+	
+	
+	/**
+	 * Diffuse mines 
+	 * Update: also avoid if next to enemy location
+	 * @param destination
+	 * @throws GameActionException
+	 */
+	protected static void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
+		Direction myDir = availableDirection(destination);
+		if (myDir == null) return; //TODO: what if myDir is null
+		MapLocation nextLocation = rc.getLocation().add(myDir);
+		mineListen();
+
+		for (MapLocation l: enemyMines) {
+			if (l != null && l.equals(nextLocation)) {
+				rc.defuseMine(nextLocation);
+				while (!rc.isActive()) {
+					rc.yield();
+				}
+				mineDefuseReport(rc.getLocation());
+				return;
+			}
+		}
+		
+		if (rc.senseMine(nextLocation) == Team.NEUTRAL) {
+			//System.out.println(myLoc.toString() + " | mine loc: " + nextLocation.toString());
+			rc.defuseMine(nextLocation);
+		} else {
+			if (rc.canMove(myDir)) {
+				rc.move(myDir);
+			}
+		}
 	}
 	
 	protected static void Log(String msg)

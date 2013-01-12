@@ -23,9 +23,9 @@ public class SoldierDefenseBot extends BaseBot {
 			MapLocation nearestEnemyBot = findClosestEnemyRobot();
 			
 			if (nearestEnemyBot != null && nearestEnemyBot.distanceSquaredTo(homeHQ) < defenseRange) {
-				defenseAttack(nearestEnemyBot);
+				defenseAttack(nearestEnemyBot); //attack enemies if nearby
 			} else if (myLoc.distanceSquaredTo(homeHQ) > homeRange) {
-				defenseGoHome();
+				moveToLocAndDefuseMine(homeHQ); //return home
 			} else {
 				layDefenseMines();
 			}
@@ -36,6 +36,7 @@ public class SoldierDefenseBot extends BaseBot {
 	private void layDefenseMines() throws GameActionException {
 		// TODO figure out a way to communicate
 
+		//wrong spacing
 		boolean isInPosition = (myLoc.y % 3 == myLoc.x % 2); //(2*myLoc.x+myLoc.y)%5 == 0;
 		
 		if (Clock.getRoundNum() > MIN_ROUNDS_BEFORE_MINE && isInPosition && (rc.senseMine(myLoc) == null)) {
@@ -48,21 +49,34 @@ public class SoldierDefenseBot extends BaseBot {
 	public void defenseAttack(MapLocation enemyBot) throws GameActionException {
 		Direction dir = availableDirection(enemyBot);
 		//TODO: add sophistication
-		if (rc.canMove(dir)) {
-			rc.move(dir);
-		}
+		moveToLocAndDefuseMine(myLoc.add(dir, 1));
 	}
 	
 	protected void defensePatrol() throws GameActionException {
+		//TODO: implement smarter mining if desired
 		
-		;
-	}
-	
-	public void defenseGoHome() throws GameActionException {		
-		Direction dir = availableDirection(homeHQ);
-		if (rc.canMove(dir)) {
-			rc.move(dir);
+        Direction dir = Direction.values()[(int)(Math.random()*8)];
+        moveToLocAndDefuseMine(myLoc.add(dir,1));
+        
+		/*
+		MapLocation[] nearbyMines = rc.senseMineLocations(myLoc, 1, rc.getTeam());
+		MapLocation dest;
+		if(nearbyMines.length == 0) {
+			if(myLoc.y % 3 == 1) ; // go to lower y
 		}
+		else if (nearbyMines.length == 1) {
+			if (nearbyMines[0].x == myLoc.x);
+		}
+		else if (nearbyMines.length == 2) { //todo: fix
+			MapLocation wrongSide = nearbyMines[0].add(nearbyMines[0].directionTo(nearbyMines[1]), 1);
+			dest = wrongSide.add(wrongSide.directionTo(myLoc), 1);
+		}
+		else { //area is all mined up
+			dest = enemyHQ; 
+		}
+*/
+		//moveToLocAndDefuseMine(dest);
 	}
 	
+		
 }
