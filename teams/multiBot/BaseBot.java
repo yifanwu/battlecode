@@ -96,7 +96,6 @@ public abstract class BaseBot {
 	protected MapLocation findClosestEnemyEncampment() throws GameActionException {
 		MapLocation[] nearbyEncampments = rc.senseEncampmentSquares(myLoc, MAX_SQUARE_RADIUS, Team.NEUTRAL);        
         MapLocation closestEncampment = nearestMapLocation(nearbyEncampments, myLoc);
-        //TODO: check if nearbyencampments views enemies
 
         return closestEncampment;
     }
@@ -203,6 +202,21 @@ public abstract class BaseBot {
 			rc.broadcast(MineDefuseChannel, encodeLoc(loc));
 		}
 	}
+	
+	protected static int closeEncodeLoc(MapLocation loc) {
+		return loc.x + loc.y*rc.getMapWidth() + 1;
+	}
+	
+	protected static MapLocation closeDecodeLoc(int msg) {
+		if (msg <= 0) return null;
+		msg--;
+		int width = rc.getMapWidth();
+		int x = msg % width;
+		int y = msg / width;
+		MapLocation loc = new MapLocation(x, y);
+		return loc;
+	}
+	
 	
 	protected static int encodeMsg(int msg) {
 		return msg*ENCODING_PRIME;

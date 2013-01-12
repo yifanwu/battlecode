@@ -31,7 +31,7 @@ public class SoldierOffenseBot extends BaseBot{
 	}
 	
 	private void offense() throws GameActionException {
-		
+	
 		if (rc.senseEncampmentSquare(rc.getLocation())) {		
 			RobotType encampmentType = chooseEncampmentType();
 			
@@ -48,7 +48,7 @@ public class SoldierOffenseBot extends BaseBot{
 			} else if (closestEnemyRobot != null) {
 				moveToLocAndDefuseMine(closestEnemyRobot);
 			} else {
-				moveToLocAndDefuseMine(enemyHQ);//rc.senseEnemyHQLocation());
+				moveToLocAndDefuseMine(enemyHQ); //rc.senseEnemyHQLocation());
 			}
 		}
 		
@@ -57,6 +57,9 @@ public class SoldierOffenseBot extends BaseBot{
 			mineReport(rc.getLocation());
 		}
 	}
+	
+	//TODO: offensive algorithm
+	
 	
 	//Moves based on the encampments and allied units seen, as well as their distances
 	protected static void vectorMove() throws GameActionException {
@@ -76,7 +79,6 @@ public class SoldierOffenseBot extends BaseBot{
 		}
 	}
 	
-	//TODO: keep running record of all neutral encampments and compare based on allied ones
 	protected static MapLocation slopeFieldDirection() throws GameActionException {
 		MapLocation currentLoc = rc.getLocation();
 
@@ -106,29 +108,9 @@ public class SoldierOffenseBot extends BaseBot{
 		point p = computeWeightedVector(currentLoc.x, currentLoc.y, enemyHQ.x, enemyHQ.y, 5);
 		sumX += p.x;
 		sumY += p.y;
-		//MapLocation[] enemies = rc.senseNearbyGameObjects(Robot.class, rc.getTeam());
-		
 		//Get Direction
-		
 		sumX *= 100;
 		sumY *= 100;
-		
-		//int a = Math.abs(sumX) > Math.abs(sumY) ? 1 : -1;
-		
-		
-		/*
-		System.out.println(sumX + " " + sumY);
-		//get to an integer point
-		double div = 1;	
-		div = (sumX < 0) ? div*sumX : div/sumX;
-		div = (sumY < 0) ? div*sumY : div/sumY;
-		
-		sumX /= div;
-		sumY /= div;
-		*/
-		//System.out.println(sumX + " " + sumY);
-		
-		
 		
 		MapLocation dest = new MapLocation((int)sumX, (int)sumY);
 		System.out.println(dest.toString());
@@ -140,11 +122,6 @@ public class SoldierOffenseBot extends BaseBot{
 		point p = new point(weight*(x-centerX)/v.normsq, weight*(y-centerY)/v.normsq);
 		return p;
 	}
-	
-	//Compute vector for each
-	//Add vectors
-	
-	//TODO: method to update encampments
 	
 	/** 
 	 * decides on the encampment type
