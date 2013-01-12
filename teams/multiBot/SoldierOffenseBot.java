@@ -41,11 +41,11 @@ public class SoldierOffenseBot extends BaseBot{
 			MapLocation closestEnemyRobot = findClosestEnemyRobot();
 			
 			if (closestEncampment != null) {
-				moveToLocAndDiffuseMine(closestEncampment);
+				moveToLocAndDefuseMine(closestEncampment);
 			} else if (closestEnemyRobot != null) {
-				moveToLocAndDiffuseMine(closestEnemyRobot);
+				moveToLocAndDefuseMine(closestEnemyRobot);
 			} else {
-				moveToLocAndDiffuseMine(enemyHQ);//rc.senseEnemyHQLocation());
+				moveToLocAndDefuseMine(enemyHQ);//rc.senseEnemyHQLocation());
 			}
 		}
 		
@@ -75,7 +75,7 @@ public class SoldierOffenseBot extends BaseBot{
 	 * @param destination
 	 * @throws GameActionException
 	 */
-	protected void moveToLocAndDiffuseMine(MapLocation destination) throws GameActionException {
+	protected void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
 		Direction myDir = availableDirection(destination);
 		MapLocation nextLocation = rc.getLocation().add(myDir);
 		mineListen();

@@ -19,6 +19,7 @@ public class RobotPlayer {
 			break;
 		case SOLDIER:
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
+			mySoldierType = SoldierType.DEFENSE;
 			switch(mySoldierType) {
 				case DEFENSE:
 					//DEFENSE IS STILL BUG
@@ -26,7 +27,6 @@ public class RobotPlayer {
 					//System.out.println("defense bot called");
 					break;
 				case OFFENSE:
-					//TODO: hack
 					br = new SoldierOffenseBot(rc);	
 					//System.out.println("offense bot called");
 					break;
