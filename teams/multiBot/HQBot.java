@@ -16,8 +16,8 @@ public class HQBot extends BaseBot{
 	private static ArrayList<MapLocation> mines;
 	//private static double halfDistBetweenHQ;
 	
-	public HQBot(RobotController rc, GameConst GC) {
-		super(rc, GC);
+	public HQBot(RobotController rc) {
+		super(rc);
 		//code to execute one time
 		mines = new ArrayList<MapLocation>();
 		enemyHQ = rc.senseEnemyHQLocation();

@@ -18,8 +18,9 @@ public abstract class BaseBot {
 	private static final int MAX_SQUARE_RADIUS = 10000;
 	protected static RobotController rc;
 	protected MapLocation myLoc;
-	protected GameConst GC;
-	
+	//protected GameConst GC;
+	protected MapLocation enemyHQ;
+	protected MapLocation homeHQ;
 
 	//Communication variables
 	protected static int[] MineListenChannels = {5024, 6609, 9113};
@@ -39,10 +40,11 @@ public abstract class BaseBot {
 	protected static int NumJamMessages = 10;
 	protected static Random RandomInt = new Random();
 	
-	public BaseBot(RobotController myRc, GameConst GC) {
+	public BaseBot(RobotController myRc) {
 		rc = myRc;
 		this.myLoc = rc.getLocation();
-		this.GC = GC;
+		enemyHQ = rc.senseEnemyHQLocation();
+		homeHQ = rc.senseHQLocation();
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
 		NumSavedChannels =
 			(int)(Math.min(GameConstants.BROADCAST_MAX_CHANNELS/(GameConstants.BROADCAST_SEND_COST), 10));
