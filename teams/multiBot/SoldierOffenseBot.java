@@ -59,10 +59,24 @@ public class SoldierOffenseBot extends BaseBot{
 	protected static void slopeFieldGenerate() throws GameActionException {
 		MapLocation[] encampments = rc.senseEncampmentSquares(rc.getLocation(), 10000, Team.NEUTRAL);
 		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 10000, rc.getTeam());
-		//MapLocation[] enemies = rc.senseNearbyGameObjects(Robot.class, rc.getTeam());
 		
+		MapLocation currentLoc = rc.getLocation();
+		for(Robot ally: allies) {
+			MapLocation loc = rc.senseRobotInfo(ally).location;
+			
+		}
+		
+		double encampmentWeight = 1;
+		double allyWeight = -0.5;
+		//square distances
+		
+		
+		//MapLocation[] enemies = rc.senseNearbyGameObjects(Robot.class, rc.getTeam());
 		//rc.senseNearbyObjects();
 	}
+	
+	//Compute vector for each
+	//Add vectors
 	
 	//TODO: method to update encampments
 	
