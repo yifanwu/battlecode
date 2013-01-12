@@ -27,9 +27,8 @@ public class HQBot extends BaseBot{
 	
 	public void run() throws GameActionException {
 		//code to execute for the whole match
-		//TODO: dummy right now
 		
-		reserveChannelJam();
+		//reserveChannelJam(); for testing
 		
 		if (rc.isActive()) {
 			if (rc.getTeamPower() < 10) {
