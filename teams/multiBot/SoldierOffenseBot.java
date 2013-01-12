@@ -38,13 +38,18 @@ public class SoldierOffenseBot extends BaseBot{
 			MapLocation closestEnemyRobot = findClosestEnemyRobot();
 			
 			if (closestEncampment != null) {
-				moveToLocAndDefuseMine(closestEncampment);
+				moveToLocAndDiffuseMine(closestEncampment);
 			} else if (closestEnemyRobot != null) {
-				moveToLocAndDefuseMine(closestEnemyRobot);
+				moveToLocAndDiffuseMine(closestEnemyRobot);
 			} else {
 				//
-				moveToLocAndDefuseMine(GC.enemyHQ);//rc.senseEnemyHQLocation());
+				moveToLocAndDiffuseMine(GC.enemyHQ);//rc.senseEnemyHQLocation());
 			}
+		}
+		
+		// report the mine to HQ
+		if(rc.senseMine(super.myLoc) == rc.getTeam().opponent()) {
+			mineReport(super.myLoc);
 		}
 	}
 	
@@ -63,16 +68,40 @@ public class SoldierOffenseBot extends BaseBot{
 	}
 	
 	/**
-	 * Defusing mines 
+	 * Diffuse mines 
+	 * Update: also avoid if next to enemy location
 	 * @param destination
 	 * @throws GameActionException
 	 */
-	protected void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
+	protected void moveToLocAndDiffuseMine(MapLocation destination) throws GameActionException {
 		Direction myDir = super.availableDirection(destination);
 		MapLocation nextLocation = rc.getLocation().add(myDir);
+		MapLocation[] enemyMines = super.mineListen();
 
-        if (rc.senseMine(nextLocation) != null) {
+		int mineCounter = 0;
+		// avoid stepping into known buggy places 
+		enemyLookup: for (MapLocation l:enemyMines) {
+			if (l.equals(nextLocation)) {
+				// shouldn't break the loop just to make sure
+				myDir = myDir.rotateRight(); 
+				// update nextLocation
+				nextLocation = rc.getLocation().add(myDir);
+				mineCounter++;
+			} else {
+				mineCounter = 0;
+				break enemyLookup;
+			}			
+		}
+		
+		// check if surrounded by enemy mines
+		if (mineCounter != 0) {
+			rc.suicide();
+			return;
+		} else if (rc.senseMine(nextLocation) != null) {
+        	//report if diffused
             rc.defuseMine(nextLocation);
+            //TODO: is there an issue if there needs time to diffuse?
+            mineDefuseReport(super.myLoc);
         } else {
             rc.move(myDir);
         }

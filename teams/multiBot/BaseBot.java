@@ -153,7 +153,6 @@ public abstract class BaseBot {
 		MapLocation result = new MapLocation(x,y);
 		return result;
 	}
-
 	
 	protected static void sweepAndJam() throws GameActionException {
 		channelSweep();
