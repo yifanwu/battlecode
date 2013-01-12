@@ -11,7 +11,7 @@ public abstract class BaseBot {
 	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
 	protected static RobotController rc;
-	protected static MapLocation myLoc;
+	public MapLocation myLoc;
 	//protected GameConst GC;
 	protected MapLocation enemyHQ;
 	protected MapLocation homeHQ;
@@ -35,17 +35,18 @@ public abstract class BaseBot {
 	protected static Queue<Integer> SavedChannels = new LinkedList<Integer>();
 	protected static int NumJamMessages = 10;
 	protected static Random RandomInt = new Random();
-	
-	public BaseBot(RobotController myRc) {
 
+
+	public BaseBot(RobotController myRc) {
 		rc = myRc;
-		BaseBot.myLoc = rc.getLocation(); //TODO: this is not updated each turn!!
+		myLoc = rc.getLocation(); //TODO: this is not updated each turn!!
 		enemyHQ = rc.senseEnemyHQLocation();
 		homeHQ = rc.senseHQLocation();
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
 		NumSavedChannels =
 			(int)(Math.min(GameConstants.BROADCAST_MAX_CHANNELS/(GameConstants.BROADCAST_SEND_COST), 10));
-	}
+		}
+
 
 	public abstract void run() throws GameActionException;
 
@@ -335,7 +336,7 @@ public abstract class BaseBot {
 	 * @param destination
 	 * @throws GameActionException
 	 */
-	protected static void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
+	protected void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
 		Direction myDir = availableDirection(destination);
 		if (myDir == null)
 			return; //TODO: what if myDir is null

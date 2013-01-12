@@ -9,13 +9,13 @@ import battlecode.common.*;
 public class HQBot extends BaseBot{
 
 	private static final int MAX_SOLDIERS = 10000;
-	
+
 	private static int totalSoldiers = 0;
 	private static MapLocation enemyHQ;
 	private static MapLocation homeHQ;
 	private static ArrayList<MapLocation> mines;
 	//private static double halfDistBetweenHQ;
-	
+
 	public HQBot(RobotController rc) {
 		super(rc);
 		//code to execute one time
@@ -24,12 +24,12 @@ public class HQBot extends BaseBot{
 		homeHQ = rc.senseHQLocation();
 		//halfDistBetweenHQ = DistBetweenHQ() / 4;
 	}
-	
+
 	public void run() throws GameActionException {
 		//code to execute for the whole match
-		
+
 		//reserveChannelJam(); for testing
-		
+
 		if (rc.isActive()) {
 			if (rc.getTeamPower() < 10) {
 				if (!rc.hasUpgrade(Upgrade.FUSION)) {
@@ -49,9 +49,9 @@ public class HQBot extends BaseBot{
 				}
 			}
 		}
-	
+
 		updateMineLocations();
-		
+
 //		reserveChannelJam(); //jamming makes it so no information gets through
 
 // test code for mine communication
@@ -72,7 +72,7 @@ public class HQBot extends BaseBot{
 		}
 */
 
-		
+
 		/*
 		 * Broadcasting scheme
 		 * 1: 
@@ -95,7 +95,7 @@ public class HQBot extends BaseBot{
 		}
 		*/	
 	}
-	
+
 	//TODO: test consensus messaging
 	//TODO: deal with channel hijacking
 	private static void updateMineLocations() throws GameActionException {
@@ -112,7 +112,7 @@ public class HQBot extends BaseBot{
 			mines.remove(loc);
 			rc.broadcast(MineDefuseChannel, INVALID_CODE);
 		}
-		
+
 		//Deal with case where mineListenchannel has been hijacked?
 		for(int channel: MineListenChannels) {
 			rc.broadcast(channel, encodeMsg(mines.size()));
@@ -121,14 +121,14 @@ public class HQBot extends BaseBot{
 			}
 		}
 	}
-	
+
 	private static boolean inMLArrayList(ArrayList<MapLocation> L, MapLocation loc) {
 		for(MapLocation x: L) {
 			if(loc.equals(x)) return true;
 		}
 		return false;
 	}
-	
+
 
 	private static Direction getDirForSpawn(MapLocation enemyHQ) {
 		// randomize the direction
@@ -141,8 +141,4 @@ public class HQBot extends BaseBot{
 		}
 		return dir;
 	}
-
-	
 }
-Window size: x 
-Viewport size: x

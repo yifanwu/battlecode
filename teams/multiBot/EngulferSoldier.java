@@ -7,26 +7,27 @@ import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
 
-public class EngulferSoldier extends BaseBot{
+public class EngulferSoldier extends BaseBot {
+
+
 	private static final int LOOKAHEAD_SPACES = 10; 
 	private static final int SQUARED_RADIUS = 9;
-	private static final int ENGULF_CHANNEL = 0;
 	private Direction currentDirection;
 	
-	public EngulferSoldier(RobotController myRc, GameConst GC) {
-		super(myRc, GC);
+	public EngulferSoldier(RobotController myRc) {
+		super(myRc);
 	}
 
 	@Override
 	public void run() throws GameActionException {
-		currentDirection = this.myLoc.directionTo(GC.enemyHQ);
-		
+		currentDirection = myLoc.directionTo(enemyHQ);
+						
 		MapLocation engulfPoint = swarmAhead(currentDirection);
 		if (engulfPoint != null) {			
 			moveAroundEngulfPoint(engulfPoint);
 		}
 		else {
-			moveToLocAndDefuseMine(GC.enemyHQ);
+			moveToLocAndDefuseMine(enemyHQ);
 		}
 	}
 	
@@ -42,7 +43,7 @@ public class EngulferSoldier extends BaseBot{
 	}
 	
 	private MapLocation swarmAhead(Direction rcDirection) {
-		MapLocation lookaheadSquare = this.myLoc.add(rcDirection, LOOKAHEAD_SPACES);
+		MapLocation lookaheadSquare = myLoc.add(rcDirection, LOOKAHEAD_SPACES);
 		Team opponent = rc.getTeam().opponent();
 		Robot[] enemiesAhead = rc.senseNearbyGameObjects(Robot.class, lookaheadSquare, SQUARED_RADIUS, opponent);
 		if (enemiesAhead.length >= SQUARED_RADIUS * 3) {
@@ -51,16 +52,5 @@ public class EngulferSoldier extends BaseBot{
 		return null;
 	}
 
-	protected void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
-		Direction myDir = super.availableDirection(destination);
-		MapLocation nextLocation = rc.getLocation().add(myDir);
-
-        if (rc.senseMine(nextLocation) != null) {
-            rc.defuseMine(nextLocation);
-        } else {
-        	if (rc.canMove(myDir))
-        		rc.move(myDir);
-        }
-	}		
 
 }
