@@ -16,7 +16,7 @@ public class SoldierOffenseBot extends BaseBot{
 	
 	public void run(){
 		if (super.VERBOSE) {
-			System.out.println("Offense run called");
+			//System.out.println("Offense run called");
 		}
 		if (rc.isActive()) {
 			try {

@@ -16,16 +16,20 @@ import battlecode.common.*;
 public abstract class BaseBot {
 	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
-	static protected RobotController rc;
+	protected static RobotController rc;
 	protected MapLocation myLoc;
 	protected GameConst GC;
 	
 
 	//Communication variables
-	protected static int MineListenChannel = 5024;
+	protected static int[] MineListenChannels = {5024, 6609, 9113};
 	protected static int MineReportChannel = 2073;
 	protected static int MineDefuseChannel = 2074;
-	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel};
+	protected static int[] ReservedChannels =
+		{MineListenChannels[0], MineListenChannels[1], MineListenChannels[2],
+		MineReportChannel, MineDefuseChannel, MineListenChannels[0] +2};
+	protected static final int ENCODING_PRIME = 24631;
+	protected static final int INVALID_CODE = 0;
 	
 	//Jamming variables
 	protected static int NumChannelGroups = 4;
@@ -35,8 +39,8 @@ public abstract class BaseBot {
 	protected static int NumJamMessages = 10;
 	protected static Random RandomInt = new Random();
 	
-	public BaseBot(RobotController rc, GameConst GC) {
-		rc = rc;
+	public BaseBot(RobotController myRc, GameConst GC) {
+		rc = myRc;
 		this.myLoc = rc.getLocation();
 		this.GC = GC;
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
@@ -56,7 +60,7 @@ public abstract class BaseBot {
 				e.printStackTrace();
 			}
 			// End turn
-			System.out.println("Yielding now");
+			//System.out.println("Yielding now");
 			rc.yield();
 		}
 	}
@@ -95,6 +99,7 @@ public abstract class BaseBot {
         return closestEnemy;
     }
 	
+	//finds the index of the item in arr that is closest to target
 	protected MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
 		int best = -1;
 		int bestDist = -1;
@@ -117,6 +122,7 @@ public abstract class BaseBot {
 		MapLocation[] locArr = new MapLocation[robots.length];  
 		
 		for (int i = 0; i<robots.length; i++) {
+			//TODO: need canSense before using senseRobotInfo
 			locArr[i] = rc.senseRobotInfo(robots[i]).location;
 		}
 		
@@ -124,16 +130,48 @@ public abstract class BaseBot {
 	}
 	
 	//Gives a list of enemy mines
+	//Returns an empty array if none
+	//Add special value too
+	//null values where garbage
+	//TODO: add consensus value-checking for mines?
 	protected static MapLocation[] mineListen() throws GameActionException {
-		int numMines = rc.readBroadcast(MineListenChannel);
-		MapLocation[] mines = new MapLocation[numMines];
-		for (int i=0;i<numMines;i++) {
-			mines[i] = decodeLoc(rc.readBroadcast(MineListenChannel + i + 1));
+		int[] numMines = new int[MineListenChannels.length];
+		for(int j=0;j<MineListenChannels.length;j++) {
+			numMines[j] = decodeMsg(rc.readBroadcast(MineListenChannels[j]));
 		}
+		MapLocation[] mines = new MapLocation[0];
+		
+		int maj = majority(numMines);
+		if(maj >= 0) {
+			mines = new MapLocation[numMines[maj]];
+			for (int i=0;i<numMines[maj];i++) {
+				mines[i] = decodeLoc(rc.readBroadcast(MineListenChannels[maj] + i + 1));
+			}	
+		}
+		
 		return mines;
 	}
+
+	//find index of majority value or return -1 if none
+	private static int majority(int[] arr) {
+		for(int i=0;i<arr.length;i++) {
+			if(countValue(arr,arr[i]) > arr.length/2) {
+				return i;
+			}
+		}
+		return -1;
+	}
 	
-	//Reports location of enemy mine
+	private static int countValue(int[] arr, int value) {
+		int count = 0;
+		for(int x: arr) {
+			if (x==value)
+				count++;
+		}
+		return count;
+	}
+	
+	//Reports location of enemy mine in encoded form
 	protected static void mineReport(MapLocation loc) throws GameActionException {
 		rc.broadcast(MineReportChannel, encodeLoc(loc));
 	}
@@ -143,13 +181,39 @@ public abstract class BaseBot {
 		rc.broadcast(MineDefuseChannel, encodeLoc(loc)); 
 	}
 	
-	protected static int encodeLoc(MapLocation loc) {
-		return (loc.x * 1000 + loc.y); // assuming maximum is capped at 1000		
+	protected static int encodeMsg(int msg) {
+		return msg*ENCODING_PRIME;
 	}
 	
-	protected static MapLocation decodeLoc (int msg) {
+	//INVALID_CODE means error
+	protected static int decodeMsg(int msg) {
+		if (msg % ENCODING_PRIME != 0 || msg == 0) return INVALID_CODE;
+		else return msg/ENCODING_PRIME;
+	}
+	
+	protected static int encodeLoc(MapLocation loc) {
+		return encodeMsg(insecureEncodeLoc(loc));
+	}
+	
+	//returns null if location is invalid
+	protected static MapLocation decodeLoc(int msg) {
+		return insecureDecodeLoc(decodeMsg(msg));
+	}
+	
+	//encodes a location as an int
+	//add 1 so 0 is not valid
+	protected static int insecureEncodeLoc(MapLocation loc) {
+		return (loc.x * 1000 + loc.y + 1); // assuming maximum is capped at 1000		
+	}
+	
+	//returns null if the location is invalid
+	protected static MapLocation insecureDecodeLoc (int msg) {
+		msg--;
 		int y = msg % 1000;
-		int x = msg/1000;
+		int x = msg / 1000;
+		if(y < 0 || y >= rc.getMapHeight()|| x < 0 || x >= rc.getMapWidth()) {
+			return null;
+		}
 		MapLocation result = new MapLocation(x,y);
 		return result;
 	}
@@ -179,6 +243,14 @@ public abstract class BaseBot {
 			ChannelGroup = 0;
 	}
 	
+	
+	//Jams reserved channels--for testing purposes
+	protected static void reserveChannelJam() throws GameActionException {
+		for(int channel: ReservedChannels) {
+			singleChannelJam(channel);
+		}
+	}
+	
 	/* Offensive broadcasting strategy 
 	 * Sweep a bunch of channels each turn
 	 * Keep a record of the last NumSavedChannels channels that have been found with non-zero data
@@ -188,7 +260,7 @@ public abstract class BaseBot {
 	protected static void channelJam() throws GameActionException {
 		for(int channel: SavedChannels ) {
 			singleChannelJam(channel);
-			System.out.println("Jamming channel " + channel);
+			//System.out.println("Jamming channel " + channel);
 		}
 	}
 	
