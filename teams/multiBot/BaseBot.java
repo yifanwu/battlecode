@@ -22,11 +22,13 @@ public abstract class BaseBot {
 	
 
 	//Communication variables
-	protected static int MineListenChannel = 5024;
+	protected static int[] MineListenChannels = {5024, 6609, 9113};
 	protected static int MineReportChannel = 2073;
 	protected static int MineDefuseChannel = 2074;
-	protected static int[] ReservedChannels = {MineListenChannel, MineReportChannel, MineDefuseChannel};
-	protected static final int ENCODING_PRIME = 179;
+	protected static int[] ReservedChannels =
+		{MineListenChannels[0], MineListenChannels[1], MineListenChannels[2],
+		MineReportChannel, MineDefuseChannel, MineListenChannels[0] +2};
+	protected static final int ENCODING_PRIME = 24631;
 	protected static final int INVALID_CODE = 0;
 	
 	//Jamming variables
@@ -129,14 +131,44 @@ public abstract class BaseBot {
 	
 	//Gives a list of enemy mines
 	//Returns an empty array if none
+	//Add special value too
+	//null values where garbage
+	//TODO: add consensus value-checking for mines?
 	protected static MapLocation[] mineListen() throws GameActionException {
-		int numMines = decodeMsg(rc.readBroadcast(MineListenChannel));
-		
-		MapLocation[] mines = new MapLocation[numMines];
-		for (int i=0;i<numMines;i++) {
-			mines[i] = decodeLoc(rc.readBroadcast(MineListenChannel + i + 1));
+		int[] numMines = new int[MineListenChannels.length];
+		for(int j=0;j<MineListenChannels.length;j++) {
+			numMines[j] = decodeMsg(rc.readBroadcast(MineListenChannels[j]));
 		}
+		MapLocation[] mines = new MapLocation[0];
+		
+		int maj = majority(numMines);
+		if(maj >= 0) {
+			mines = new MapLocation[numMines[maj]];
+			for (int i=0;i<numMines[maj];i++) {
+				mines[i] = decodeLoc(rc.readBroadcast(MineListenChannels[maj] + i + 1));
+			}	
+		}
+		
 		return mines;
+	}
+
+	//find index of majority value or return -1 if none
+	private static int majority(int[] arr) {
+		for(int i=0;i<arr.length;i++) {
+			if(countValue(arr,arr[i]) > arr.length/2) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	private static int countValue(int[] arr, int value) {
+		int count = 0;
+		for(int x: arr) {
+			if (x==value)
+				count++;
+		}
+		return count;
 	}
 	
 	//Reports location of enemy mine in encoded form
@@ -210,6 +242,14 @@ public abstract class BaseBot {
 		
 		if(++ChannelGroup >= NumChannelGroups)
 			ChannelGroup = 0;
+	}
+	
+	
+	//Jams reserved channels--for testing purposes
+	protected static void reserveChannelJam() throws GameActionException {
+		for(int channel: ReservedChannels) {
+			singleChannelJam(channel);
+		}
 	}
 	
 	/* Offensive broadcasting strategy 
