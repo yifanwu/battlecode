@@ -9,7 +9,10 @@ import battlecode.common.*;
 /**
  * TODO: have more types of soldiers!
  */
-public class SoldierOffenseBot extends BaseBot{	
+public class SoldierOffenseBot extends BaseBot{
+	protected static double AllyWeight = -0.5;
+	protected static double EncampmentWeight = 4;
+	
 	public SoldierOffenseBot (RobotController rc) {
 		super(rc);
 	}
@@ -36,7 +39,7 @@ public class SoldierOffenseBot extends BaseBot{
 				rc.captureEncampment(encampmentType);
 			}
 		} else {
-			
+			//vectorMove();
 			MapLocation closestEncampment = findClosestEnemyEncampment();
 			MapLocation closestEnemyRobot = findClosestEnemyRobot();
 			
@@ -55,24 +58,87 @@ public class SoldierOffenseBot extends BaseBot{
 		}
 	}
 	
-	
-	protected static void slopeFieldGenerate() throws GameActionException {
-		MapLocation[] encampments = rc.senseEncampmentSquares(rc.getLocation(), 10000, Team.NEUTRAL);
-		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 10000, rc.getTeam());
-		
+	//Moves based on the encampments and allied units seen, as well as their distances
+	protected static void vectorMove() throws GameActionException {
 		MapLocation currentLoc = rc.getLocation();
-		for(Robot ally: allies) {
-			MapLocation loc = rc.senseRobotInfo(ally).location;
-			
+		MapLocation dest = slopeFieldDirection();
+		Direction dir;
+		if (dest.equals(currentLoc)) {
+            dir = Direction.values()[(int)(Math.random()*8)];
+            rc.setIndicatorString(0, "Random move");
+		}
+		else {
+			dir = currentLoc.directionTo(dest);
+			rc.setIndicatorString(0, "Moved: " +dir.toString());
+		}
+		if (!defuseMineIfThere(dir) && rc.canMove(dir)) {
+			rc.move(dir);
+		}
+	}
+	
+	//TODO: keep running record of all neutral encampments and compare based on allied ones
+	protected static MapLocation slopeFieldDirection() throws GameActionException {
+		MapLocation currentLoc = rc.getLocation();
+
+		MapLocation[] encampments = rc.senseEncampmentSquares(currentLoc, 10000, Team.NEUTRAL);
+		Robot[] allies = rc.senseNearbyGameObjects(Robot.class, 10000, rc.getTeam());
+
+		double sumX = 0;
+		double sumY = 0;
+		
+		for (Robot ally: allies) {
+			RobotInfo info = rc.senseRobotInfo(ally);
+			if (info.type != RobotType.SOLDIER)
+				continue;
+			MapLocation loc = info.location;
+			point p = computeWeightedVector(currentLoc.x, currentLoc.y, loc.x, loc.y, AllyWeight);
+			sumX += p.x;
+			sumY += p.y;
 		}
 		
-		double encampmentWeight = 1;
-		double allyWeight = -0.5;
-		//square distances
+		for (MapLocation loc: encampments) {
+			point p = computeWeightedVector(currentLoc.x, currentLoc.y, loc.x, loc.y, EncampmentWeight);
+			sumX += p.x;
+			sumY += p.y;
+		}
 		
-		
+		MapLocation enemyHQ = rc.senseEnemyHQLocation();
+		point p = computeWeightedVector(currentLoc.x, currentLoc.y, enemyHQ.x, enemyHQ.y, 5);
+		sumX += p.x;
+		sumY += p.y;
 		//MapLocation[] enemies = rc.senseNearbyGameObjects(Robot.class, rc.getTeam());
-		//rc.senseNearbyObjects();
+		
+		//Get Direction
+		
+		sumX *= 100;
+		sumY *= 100;
+		
+		//int a = Math.abs(sumX) > Math.abs(sumY) ? 1 : -1;
+		
+		
+		/*
+		System.out.println(sumX + " " + sumY);
+		//get to an integer point
+		double div = 1;	
+		div = (sumX < 0) ? div*sumX : div/sumX;
+		div = (sumY < 0) ? div*sumY : div/sumY;
+		
+		sumX /= div;
+		sumY /= div;
+		*/
+		//System.out.println(sumX + " " + sumY);
+		
+		
+		
+		MapLocation dest = new MapLocation((int)sumX, (int)sumY);
+		System.out.println(dest.toString());
+		return dest;
+	}
+	
+	protected static point computeWeightedVector(int centerX, int centerY, int x, int y, double weight) {
+		vector v = new vector(centerX, centerY, x, y);
+		point p = new point(weight*(x-centerX)/v.normsq, weight*(y-centerY)/v.normsq);
+		return p;
 	}
 	
 	//Compute vector for each

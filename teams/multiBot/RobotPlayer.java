@@ -19,7 +19,7 @@ public class RobotPlayer {
 			break;
 		case SOLDIER:
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
-			//mySoldierType = SoldierType.DEFENSE;
+			mySoldierType = SoldierType.OFFENSE;
 			switch(mySoldierType) {
 				case DEFENSE:
 					//DEFENSE IS STILL BUG

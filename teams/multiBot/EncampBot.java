@@ -13,8 +13,6 @@ public class EncampBot extends BaseBot{
 		if (rc.isActive() && rc.getType() == RobotType.ARTILLERY) {
 			//check enemy HQ first
 			
-			
-			
 			Robot enemies[] =
 				rc.senseNearbyGameObjects(Robot.class, RobotType.ARTILLERY.attackRadiusMaxSquared, rc.getTeam().opponent());
 			/*

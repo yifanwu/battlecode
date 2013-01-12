@@ -44,7 +44,7 @@ public abstract class BaseBot {
 	
 	public BaseBot(RobotController myRc) {
 		rc = myRc;
-		this.myLoc = rc.getLocation();
+		this.myLoc = rc.getLocation(); //TODO: this is not updated each turn!!
 		enemyHQ = rc.senseEnemyHQLocation();
 		homeHQ = rc.senseHQLocation();
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
@@ -344,8 +344,19 @@ public abstract class BaseBot {
 	 */
 	protected static void moveToLocAndDefuseMine(MapLocation destination) throws GameActionException {
 		Direction myDir = availableDirection(destination);
-		if (myDir == null) return; //TODO: what if myDir is null
-		MapLocation nextLocation = rc.getLocation().add(myDir);
+		if (myDir == null)
+			return; //TODO: what if myDir is null
+		
+		if(!defuseMineIfThere(myDir) && rc.canMove(myDir)) {
+			rc.move(myDir);
+		}
+	}
+	
+	//returns true if defused mine (don't move)
+	//returns false if okay to move (isActive)
+	//assumes isActive at start
+	protected static boolean defuseMineIfThere(Direction dir) throws GameActionException {
+		MapLocation nextLocation = rc.getLocation().add(dir);
 		mineListen();
 
 		for (MapLocation l: enemyMines) {
@@ -355,18 +366,17 @@ public abstract class BaseBot {
 					rc.yield();
 				}
 				mineDefuseReport(rc.getLocation());
-				return;
+				return false; //can move, since will be active
 			}
 		}
 		
 		if (rc.senseMine(nextLocation) == Team.NEUTRAL) {
 			//System.out.println(myLoc.toString() + " | mine loc: " + nextLocation.toString());
 			rc.defuseMine(nextLocation);
-		} else {
-			if (rc.canMove(myDir)) {
-				rc.move(myDir);
-			}
+			return true;
 		}
+		
+		return false;
 	}
 	
 	protected static void Log(String msg)
@@ -375,3 +385,4 @@ public abstract class BaseBot {
 	}	
 	
 }
+
