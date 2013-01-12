@@ -10,8 +10,8 @@ import battlecode.common.*;
  * TODO: have more types of soldiers!
  */
 public class SoldierOffenseBot extends BaseBot{	
-	public SoldierOffenseBot (RobotController rc, GameConst GC) {
-		super(rc, GC);
+	public SoldierOffenseBot (RobotController rc) {
+		super(rc);
 	}
 	
 	public void run(){
@@ -43,13 +43,13 @@ public class SoldierOffenseBot extends BaseBot{
 				moveToLocAndDiffuseMine(closestEnemyRobot);
 			} else {
 				//
-				moveToLocAndDiffuseMine(GC.enemyHQ);//rc.senseEnemyHQLocation());
+				moveToLocAndDiffuseMine(enemyHQ);//rc.senseEnemyHQLocation());
 			}
 		}
 		
 		// report the mine to HQ
-		if(rc.senseMine(super.myLoc) == rc.getTeam().opponent()) {
-			mineReport(super.myLoc);
+		if(rc.senseMine(myLoc) == rc.getTeam().opponent()) {
+			mineReport(myLoc);
 		}
 	}
 	
@@ -78,33 +78,39 @@ public class SoldierOffenseBot extends BaseBot{
 		MapLocation nextLocation = rc.getLocation().add(myDir);
 		MapLocation[] enemyMines = super.mineListen();
 
-		int mineCounter = 0;
+		//int mineCounter = 0;
 		// avoid stepping into known buggy places 
-		enemyLookup: for (MapLocation l:enemyMines) {
+		//enemyLookup: 
+		for (MapLocation l:enemyMines) {
 			if (l.equals(nextLocation)) {
+				rc.defuseMine(nextLocation);
+				return;
 				// shouldn't break the loop just to make sure
-				myDir = myDir.rotateRight(); 
+				//myDir = myDir.rotateRight(); 
 				// update nextLocation
-				nextLocation = rc.getLocation().add(myDir);
-				mineCounter++;
-			} else {
-				mineCounter = 0;
-				break enemyLookup;
-			}			
+				//nextLocation = rc.getLocation().add(myDir);
+				//mineCounter++;
+			}
+			//else {
+				//mineCounter = 0;
+				//break enemyLookup;
+			//}			
 		}
 		
 		// check if surrounded by enemy mines
-		if (mineCounter != 0) {
+	/*	if (mineCounter != 0) {
 			rc.suicide();
 			return;
-		} else if (rc.senseMine(nextLocation) != null) {
-        	//report if diffused
-            rc.defuseMine(nextLocation);
-            //TODO: is there an issue if there needs time to diffuse?
-            mineDefuseReport(super.myLoc);
-        } else {
-            rc.move(myDir);
-        }
+		} else*/ 
+			
+		if (rc.senseMine(nextLocation) != null) {
+			//report if diffused
+			rc.defuseMine(nextLocation);
+			//TODO: is there an issue if there needs time to diffuse?
+			mineDefuseReport(myLoc);
+		} else {
+			rc.move(myDir);
+		}
 	}		
 	
 }

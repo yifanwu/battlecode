@@ -18,28 +18,29 @@ public class RobotPlayer {
 		BaseBot br = null;
 		switch(rc.getType()) {
 		case HQ:
-			br = new HQBot(rc, GC);
+			br = new HQBot(rc);
 			break;
 		case SOLDIER:
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
 			switch(mySoldierType) {
 				case DEFENSE:
-					br = new SoldierOffenseBot(rc, GC);
+					//DEFENSE IS STILL BUGG
+					br = new SoldierOffenseBot(rc);
 					System.out.println("defense bot called");
 					break;
 				case OFFENSE:
 					//TODO: hack
-					br = new SoldierOffenseBot(rc, GC);	
+					br = new SoldierOffenseBot(rc);	
 					System.out.println("offense bot called");
 					break;
 				default:
-					br = new SoldierOffenseBot(rc, GC);	
+					br = new SoldierOffenseBot(rc);	
 					System.out.println("other bot called");
 
 			}					
 			break;
 		default:
-			br = new EncampBot(rc, GC);
+			br = new EncampBot(rc);
 			break;
 		}
 		
@@ -47,7 +48,7 @@ public class RobotPlayer {
 	}
 
 	public static void setup(RobotController rc) {
-		GC = new GameConst(rc.getMapWidth(), rc.senseEnemyHQLocation(), rc.senseHQLocation());
+		//TODO add stuff
 	}
 	
 	// ratio: 1:1
