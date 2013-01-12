@@ -46,15 +46,19 @@ public class SoldierDefenseBot extends BaseBot {
 	}
 
 	public void defenseAttack(MapLocation enemyBot) throws GameActionException {
-		Direction dir = super.availableDirection(enemyBot);
+		Direction dir = availableDirection(enemyBot);
 		//TODO: add sophistication
-		rc.move(dir);
+		if (rc.canMove(dir)) {
+			rc.move(dir);
+		}
 	}
 	
 	public void defenseGoHome() throws GameActionException {
 		Direction dirEnemy = homeHQ.directionTo(enemyHQ);		
 		Direction dir = availableDirection(homeHQ.add(dirEnemy, DEFENSE_RANGE));
-		rc.move(dir);		
+		if (rc.canMove(dir)) {
+			rc.move(dir);
+		}
 	}
 	
 }
