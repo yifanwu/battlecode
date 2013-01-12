@@ -44,7 +44,7 @@ public abstract class BaseBot {
 	
 	public BaseBot(RobotController myRc) {
 		rc = myRc;
-		this.myLoc = rc.getLocation(); //TODO: this is not updated each turn!!
+		myLoc = rc.getLocation(); //TODO: this is not updated each turn!!
 		enemyHQ = rc.senseEnemyHQLocation();
 		homeHQ = rc.senseHQLocation();
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
