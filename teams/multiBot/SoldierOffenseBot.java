@@ -31,7 +31,10 @@ public class SoldierOffenseBot extends BaseBot{
 		
 		if (rc.senseEncampmentSquare(rc.getLocation())) {		
 			RobotType encampmentType = chooseEncampmentType();
-			rc.captureEncampment(encampmentType);		
+			
+			if (rc.getTeamPower() > rc.senseCaptureCost()) {
+				rc.captureEncampment(encampmentType);
+			}
 		} else {
 			
 			MapLocation closestEncampment = findClosestEnemyEncampment();
@@ -42,7 +45,6 @@ public class SoldierOffenseBot extends BaseBot{
 			} else if (closestEnemyRobot != null) {
 				moveToLocAndDiffuseMine(closestEnemyRobot);
 			} else {
-				//
 				moveToLocAndDiffuseMine(enemyHQ);//rc.senseEnemyHQLocation());
 			}
 		}
@@ -74,42 +76,26 @@ public class SoldierOffenseBot extends BaseBot{
 	 * @throws GameActionException
 	 */
 	protected void moveToLocAndDiffuseMine(MapLocation destination) throws GameActionException {
-		Direction myDir = super.availableDirection(destination);
+		Direction myDir = availableDirection(destination);
 		MapLocation nextLocation = rc.getLocation().add(myDir);
-		MapLocation[] enemyMines = super.mineListen();
+		mineListen();
 
-		//int mineCounter = 0;
-		// avoid stepping into known buggy places 
-		//enemyLookup: 
-		for (MapLocation l:enemyMines) {
-			if (l.equals(nextLocation)) {
+		for (MapLocation l: enemyMines) {
+			if (l != null && l.equals(nextLocation)) {
 				rc.defuseMine(nextLocation);
+				while (!rc.isActive()) {
+					rc.yield();
+				}
+				mineDefuseReport(myLoc);
 				return;
-				// shouldn't break the loop just to make sure
-				//myDir = myDir.rotateRight(); 
-				// update nextLocation
-				//nextLocation = rc.getLocation().add(myDir);
-				//mineCounter++;
 			}
-			//else {
-				//mineCounter = 0;
-				//break enemyLookup;
-			//}			
-		}
-		
-		// check if surrounded by enemy mines
-	/*	if (mineCounter != 0) {
-			rc.suicide();
-			return;
-		} else*/ 
-			
+		}			
 		if (rc.senseMine(nextLocation) != null) {
-			//report if diffused
 			rc.defuseMine(nextLocation);
-			//TODO: is there an issue if there needs time to diffuse?
-			mineDefuseReport(myLoc);
 		} else {
-			rc.move(myDir);
+			if (rc.canMove(myDir)) {
+				rc.move(myDir);
+			}
 		}
 	}		
 	

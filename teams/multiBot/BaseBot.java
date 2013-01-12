@@ -31,6 +31,7 @@ public abstract class BaseBot {
 		MineReportChannel, MineDefuseChannel, MineListenChannels[0] +2};
 	protected static final int ENCODING_PRIME = 24631;
 	protected static final int INVALID_CODE = 0;
+	protected static MapLocation[] enemyMines = new MapLocation[0];
 	
 	//Jamming variables
 	protected static int NumChannelGroups = 4;
@@ -94,6 +95,7 @@ public abstract class BaseBot {
         return closestEncampment;
     }
 	
+	//returns null if none found
 	protected MapLocation findClosestEnemyRobot() throws GameActionException {
         Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,MAX_SQUARE_RADIUS, rc.getTeam().opponent());        
         MapLocation closestEnemy = nearestBotLocation(enemyRobots, myLoc);
@@ -102,6 +104,7 @@ public abstract class BaseBot {
     }
 	
 	//finds the index of the item in arr that is closest to target
+	//returns null if array is empty
 	protected MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
 		int best = -1;
 		int bestDist = -1;
@@ -120,12 +123,14 @@ public abstract class BaseBot {
 		}
 	}
 	
+	//returns null if none found
 	protected MapLocation nearestBotLocation(Robot robots[], MapLocation target) throws GameActionException {
 		MapLocation[] locArr = new MapLocation[robots.length];  
 		
 		for (int i = 0; i<robots.length; i++) {
-			//TODO: need canSense before using senseRobotInfo
-			locArr[i] = rc.senseRobotInfo(robots[i]).location;
+			if (rc.canSenseObject(robots[i])) {
+				locArr[i] = rc.senseRobotInfo(robots[i]).location;
+			}
 		}
 		
 		return nearestMapLocation(locArr, target);
@@ -136,7 +141,10 @@ public abstract class BaseBot {
 	//Add special value too
 	//null values where garbage
 	//TODO: add consensus value-checking for mines?
-	protected static MapLocation[] mineListen() throws GameActionException {
+	protected static void mineListen() throws GameActionException {
+		if (rc.getTeamPower() < GameConstants.BROADCAST_READ_COST*50) {
+			return;
+		}
 		int[] numMines = new int[MineListenChannels.length];
 		for(int j=0;j<MineListenChannels.length;j++) {
 			numMines[j] = decodeMsg(rc.readBroadcast(MineListenChannels[j]));
@@ -145,13 +153,16 @@ public abstract class BaseBot {
 		
 		int maj = majority(numMines);
 		if(maj >= 0) {
+			if (rc.getTeamPower() < GameConstants.BROADCAST_READ_COST*(numMines[maj]+ 1)) {
+				return;
+			}
 			mines = new MapLocation[numMines[maj]];
 			for (int i=0;i<numMines[maj];i++) {
 				mines[i] = decodeLoc(rc.readBroadcast(MineListenChannels[maj] + i + 1));
 			}	
 		}
 		
-		return mines;
+		enemyMines = mines;
 	}
 
 	//find index of majority value or return -1 if none
@@ -175,12 +186,16 @@ public abstract class BaseBot {
 	
 	//Reports location of enemy mine in encoded form
 	protected static void mineReport(MapLocation loc) throws GameActionException {
-		rc.broadcast(MineReportChannel, encodeLoc(loc));
+		if (rc.getTeamPower() > GameConstants.BROADCAST_SEND_COST) {
+			rc.broadcast(MineReportChannel, encodeLoc(loc));
+		}
 	}
 	
 	//Reports location of defused mine
 	protected static void mineDefuseReport(MapLocation loc) throws GameActionException {
-		rc.broadcast(MineDefuseChannel, encodeLoc(loc)); 
+		if (rc.getTeamPower() > GameConstants.BROADCAST_SEND_COST) {
+			rc.broadcast(MineDefuseChannel, encodeLoc(loc));
+		}
 	}
 	
 	protected static int encodeMsg(int msg) {
@@ -221,12 +236,17 @@ public abstract class BaseBot {
 	}
 	
 	protected static void sweepAndJam() throws GameActionException {
-		channelSweep();
-		channelJam();
+		return; //Didn't realize that there's a power cost for doing this
+		//channelSweep();
+		//channelJam();
 	}
 	
 	//Sweep a portion of the open channels, looking for ones that are in use, adding them to SavedChannels
 	protected static void channelSweep() throws GameActionException {
+		if(rc.getTeamPower() < GameConstants.BROADCAST_READ_COST *
+				GameConstants.BROADCAST_MAX_CHANNELS / (double)(NumChannelGroups)) {
+			return;
+		}
 		for(int i=(int)(GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup)/NumChannelGroups));
 			i<=GameConstants.BROADCAST_MAX_CHANNELS*((double)(ChannelGroup + 1)/NumChannelGroups);
 			i++) {
@@ -269,6 +289,9 @@ public abstract class BaseBot {
 	//Jams a single channel with a variety of messages
 	//Good for testing robustness to enemy jamming (i.e. use it on reserved channels)
 	protected static void singleChannelJam(int channel) throws GameActionException {
+		if (rc.getTeamPower() < GameConstants.BROADCAST_SEND_COST + GameConstants.BROADCAST_READ_COST) {
+			return;
+		}
 		int x = Clock.getRoundNum() % NumJamMessages;
 		int orig = rc.readBroadcast(channel);
 		if(x == 0) {

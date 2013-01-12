@@ -2,10 +2,7 @@ package multiBot;
 
 import battlecode.common.*;
 
-/**
- */
 public class RobotPlayer {
-	private static GameConst GC;
 	public enum SoldierType {
 		OFFENSE,DEFENSE
 	}
@@ -24,18 +21,18 @@ public class RobotPlayer {
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
 			switch(mySoldierType) {
 				case DEFENSE:
-					//DEFENSE IS STILL BUGG
-					br = new SoldierOffenseBot(rc);
-					System.out.println("defense bot called");
+					//DEFENSE IS STILL BUG
+					br = new SoldierDefenseBot(rc);
+					//System.out.println("defense bot called");
 					break;
 				case OFFENSE:
 					//TODO: hack
 					br = new SoldierOffenseBot(rc);	
-					System.out.println("offense bot called");
+					//System.out.println("offense bot called");
 					break;
 				default:
 					br = new SoldierOffenseBot(rc);	
-					System.out.println("other bot called");
+					//System.out.println("other bot called");
 
 			}					
 			break;
@@ -48,7 +45,7 @@ public class RobotPlayer {
 	}
 
 	public static void setup(RobotController rc) {
-		//TODO add stuff
+		//TODO: add stuff
 	}
 	
 	// ratio: 1:1
