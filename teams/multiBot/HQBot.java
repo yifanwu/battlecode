@@ -144,3 +144,5 @@ public class HQBot extends BaseBot{
 
 	
 }
+Window size: x 
+Viewport size: x
