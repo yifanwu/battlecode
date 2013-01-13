@@ -16,6 +16,7 @@ public class EngulferSoldier extends BaseBot {
 	
 	public EngulferSoldier(RobotController myRc) {
 		super(myRc);
+		myLoc = rc.getLocation();
 	}
 
 	@Override

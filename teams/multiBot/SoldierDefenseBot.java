@@ -7,9 +7,9 @@ import battlecode.common.*;
 public class SoldierDefenseBot extends BaseBot {
 	
 	protected static int defenseRange = 36; 
-	protected static int homeRange = 49;
+	protected static int homeRange = 100;
 	protected static final int HOME_SPACE = 9;
-	protected static final int MIN_ROUNDS_BEFORE_MINE = 100;
+	protected static final int MIN_ROUNDS_BEFORE_MINE = 50;
 
 
 	public SoldierDefenseBot (RobotController rc) { //code for initializing
@@ -25,17 +25,22 @@ public class SoldierDefenseBot extends BaseBot {
 			if (nearestEnemyBot != null && nearestEnemyBot.distanceSquaredTo(homeHQ) < defenseRange) {
 				defenseAttack(nearestEnemyBot); //attack enemies if nearby
 			} else if (myLoc.distanceSquaredTo(homeHQ) > homeRange) {
-				moveToLocAndDefuseMine(homeHQ); //return home
+				//moveToLocAndDefuseMine(homeHQ); //return home
+				rc.layMine();
 			} else {
-				layDefenseMines();
+				if (VERBOSE) {
+					System.out.println("laying mine");
+				}
+				//layDefenseMines();
+				rc.layMine();
 			}
 		}
 	}
 	
 	private void layDefenseMines() throws GameActionException {
 		// TODO figure out a way to communicate
-
-		boolean isInPosition = (myLoc.y+2*(myLoc.x%2) )%4 == 0; //(2*myLoc.x+myLoc.y)%5 == 0;
+		boolean isInPosition = true;
+		//boolean isInPosition = (myLoc.y+2*(myLoc.x%2) )%4 == 0; //(2*myLoc.x+myLoc.y)%5 == 0;
 		
 		if (Clock.getRoundNum() > MIN_ROUNDS_BEFORE_MINE && isInPosition && (rc.senseMine(myLoc) == null)) {
 			rc.layMine();
