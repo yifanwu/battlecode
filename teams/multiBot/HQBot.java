@@ -106,10 +106,13 @@ public class HQBot extends BaseBot{
 	
 	//TODO: assignEncampment jobs
 	protected static void assignEncampmentJobs() {
-		MapLocation locs[] = rc.senseAllEncampmentSquares();
 		int count = 0;
-		while(count < locs.length/2) {
-			//find lowest unassigned
+		int i = 0;
+		while(count < EncampmentLocs.length/2) {
+			
+			if (true) {
+				;
+			}
 			count++;
 		}		
 	}

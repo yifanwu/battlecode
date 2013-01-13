@@ -57,10 +57,6 @@ public abstract class BaseBot {
 		NumSavedChannels =
 			(int)(Math.min(GameConstants.BROADCAST_MAX_CHANNELS/(GameConstants.BROADCAST_SEND_COST), 10));
 		EncampmentLocs = sortLocations(rc.senseAllEncampmentSquares(), homeHQ);
-		for(int i=0;i<EncampmentLocs.length;i++) {
-			System.out.print(EncampmentLocs[i] + " ");
-		}
-		System.out.println();
 	}
 	
 	public abstract void run() throws GameActionException;
@@ -200,12 +196,12 @@ public abstract class BaseBot {
 		return count;
 	}
 	
-	
 	//checks if HQ has a job available
 	protected static void checkForJob() throws GameActionException {
 		if(checkForEncampmentJob()) return;
 	}
 	
+	//TODO: make a better sorting algorithm
 	//sort locations in order of closeness to dest
 	protected static MapLocation[] sortLocations(MapLocation[] locs, MapLocation dest) {
 		for (int i=0;i<locs.length;i++) {
@@ -218,15 +214,11 @@ public abstract class BaseBot {
 					best = curdist;
 				}
 			}
-			swap(locs, i, bestInd);
+			MapLocation temp = locs[i];
+			locs[i] = locs[bestInd];
+			locs[bestInd] = temp;
 		}
 		return locs;
-	}
-	
-	protected static void swap(MapLocation[] locs, int ind1, int ind2) {
-		MapLocation temp = locs[ind1];
-		locs[ind1] = locs[ind2];
-		locs[ind1] = temp;
 	}
 	
 	protected static boolean checkForEncampmentJob() throws GameActionException {
