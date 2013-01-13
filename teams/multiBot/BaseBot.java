@@ -27,9 +27,9 @@ public abstract class BaseBot {
 	//Communication variables
 	protected static final int GO_CODE = -27; //for instructions
 	protected static final int SPACING_CONSTANT = 5001; //for multi-channel writing
-	protected static int[] MineListenChannels = {5024, 6609, 9113};
-	protected static int MineReportChannel = 2073;
-	protected static int MineDefuseChannel = 2074;
+	protected static int[] MineListenChannels = {35024, 36609, 39113};
+	protected static int MineReportChannel = 32073;
+	protected static int MineDefuseChannel = 32074;
 	protected static int FirstEncampmentChannel = 0;
 	protected static int[] ReservedChannels =
 		{MineListenChannels[0], MineListenChannels[1], MineListenChannels[2],
@@ -39,6 +39,8 @@ public abstract class BaseBot {
 	protected static MapLocation[] enemyMines = new MapLocation[0];
 	protected static boolean hasJob = false;
 	protected static MapLocation job;
+	protected static int turnsOnJob = 0;
+	protected static int jobChannel = 0;
 	
 	//Jamming variables
 	protected static int NumChannelGroups = 4;
@@ -227,13 +229,18 @@ public abstract class BaseBot {
 			if (ans == GO_CODE) {
 				multiWrite(i, rc.getRobot().getID());
 				hasJob = true;
+				turnsOnJob = 0;
 				job = EncampmentLocs[i];
+				jobChannel = i;
+				rc.setIndicatorString(0, "Received job to go to " + EncampmentLocs[i].toString());
+				System.out.println("Received job to go to " + EncampmentLocs[i].toString());
 				return true;
 			}
 		}
 		return false;
 	}
 
+	//encodes and writes on multiple channels
 	protected static boolean multiWrite(int baseChannel, int msg) throws GameActionException {
 		for (int i=0;i<5;i++) {
 			if(!safeWriteBroadcast(baseChannel + SPACING_CONSTANT*i, encodeMsg(msg))) {
@@ -268,12 +275,7 @@ public abstract class BaseBot {
 			return true;
 		}	
 		return false;
-	}
-	
-	//fidelity function
-	
-	
-	
+	}	
 	
 	
 	//Reports location of enemy mine in encoded form

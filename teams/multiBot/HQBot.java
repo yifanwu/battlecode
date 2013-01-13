@@ -59,7 +59,8 @@ public class HQBot extends BaseBot{
 		}
 
 		updateMineLocations();
-
+		assignEncampmentJobs();
+		
 //		reserveChannelJam(); //jamming makes it so no information gets through
 
 // test code for mine communication
@@ -104,28 +105,34 @@ public class HQBot extends BaseBot{
 		*/	
 	}
 	
-	//TODO: assignEncampment jobs
 	protected static void assignEncampmentJobs() throws GameActionException {
 		MapLocation locs[] = rc.senseAlliedEncampmentSquares();
-		int count = 0;
+		int count = 0; //count of encampments with GO_CODE
 		int i = 0;
-		while(count < EncampmentLocs.length/2 && i < EncampmentLocs.length) {
+		while(count < 3 && i < EncampmentLocs.length) {
 			if(inMLArray(locs, EncampmentLocs[i])) {
-				i++;
+				i++; //check next encampment
 				continue;
 			}
-			else if (false) {
-				;
-			}
-			else { //not allied or taken--send job
+			else { //not allied encampment
+				//check if taken
+				int id = getMajorityAnswer(FirstEncampmentChannel+i);
+				boolean workerAlive = false;
+				Robot allies[] = rc.senseNearbyGameObjects(Robot.class, 10000, rc.getTeam());
+				for (Robot ally: allies) {
+					if (ally.getID() == id) {
+						workerAlive = true;
+						break;
+					}	
+				}
+				if (!workerAlive) {
+					multiWrite(FirstEncampmentChannel+i, GO_CODE);
+					count++;
+				}
 				
-				//TODO: this!
-				//Read channel first
-				multiWrite(FirstEncampmentChannel+i, GO_CODE);
-				count++;
-				i++;
+				i++; //check next encampment
 			}
-		}		
+		}
 	}
 
 	protected static boolean inMLArray(MapLocation arr[], MapLocation loc) {
