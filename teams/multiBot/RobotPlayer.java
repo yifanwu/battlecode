@@ -30,19 +30,19 @@ public class RobotPlayer {
 			
 			switch(mySoldierType) {
 				case DEFENSE:
-					br = new SoldierDefenseBot(rc);
+					br = new SwarmBot(rc);
 					System.out.println("defense bot called");
 					break;
 				case OFFENSE:
-					br = new SoldierOffenseBot(rc);	
+					br = new SwarmBot(rc);	
 					System.out.println("offense bot called");
 					break;
 				case ENGULF:
-					br = new EngulferSoldier(rc);	
+					br = new SwarmBot(rc);	
 					System.out.println("engulf bot called");
 					break;
 				default:
-					br = new SoldierOffenseBot(rc);	
+					br = new SwarmBot(rc);	
 					System.out.println("other bot called");
 			}					
 			break;

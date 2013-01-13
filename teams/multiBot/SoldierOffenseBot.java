@@ -12,11 +12,11 @@ import battlecode.common.*;
 public class SoldierOffenseBot extends BaseBot{
 	protected static double AllyWeight = -0.5;
 	protected static double EncampmentWeight = 4;
-	
+
 	public SoldierOffenseBot (RobotController rc) {
 		super(rc);
 	}
-	
+
 	public void run(){
 		if (super.VERBOSE) {
 			//System.out.println("Offense run called");
@@ -29,17 +29,17 @@ public class SoldierOffenseBot extends BaseBot{
 			}
 		}		
 	}
-	
+
 	private void offense() throws GameActionException {
 		checkForJob();
-		
+
 		if (job != null && myLoc.equals(job)) {
 			job = null;
 			hasJob = false;
 		}
 		if (rc.senseEncampmentSquare(rc.getLocation())) {		
 			RobotType encampmentType = chooseEncampmentType();
-			
+
 			if (rc.getTeamPower() > rc.senseCaptureCost()) {
 				rc.captureEncampment(encampmentType);
 			}
@@ -47,7 +47,7 @@ public class SoldierOffenseBot extends BaseBot{
 			//vectorMove();
 			MapLocation closestEncampment = findClosestEnemyEncampment();
 			MapLocation closestEnemyRobot = findClosestEnemyRobot();
-			
+
 			if (hasJob) {
 				moveToLocAndDefuseMine(job);
 			}
@@ -59,15 +59,15 @@ public class SoldierOffenseBot extends BaseBot{
 				moveToLocAndDefuseMine(enemyHQ); //rc.senseEnemyHQLocation());
 			}
 		}
-		
+
 		// report the mine to HQ
 		if(rc.senseMine(rc.getLocation()) == rc.getTeam().opponent()) {
 			mineReport(rc.getLocation());
 		}
 	}
-	
+
 	//TODO: offensive algorithm
-	
+
 	//Moves based on the encampments and allied units seen, as well as their distances
 	protected static void vectorMove() throws GameActionException {
 		MapLocation currentLoc = rc.getLocation();
@@ -85,7 +85,7 @@ public class SoldierOffenseBot extends BaseBot{
 			rc.move(dir);
 		}
 	}
-	
+
 	protected static MapLocation slopeFieldDirection() throws GameActionException {
 		MapLocation currentLoc = rc.getLocation();
 
@@ -94,7 +94,7 @@ public class SoldierOffenseBot extends BaseBot{
 
 		double sumX = 0;
 		double sumY = 0;
-		
+
 		for (Robot ally: allies) {
 			RobotInfo info = rc.senseRobotInfo(ally);
 			if (info.type != RobotType.SOLDIER)
@@ -104,13 +104,13 @@ public class SoldierOffenseBot extends BaseBot{
 			sumX += p.x;
 			sumY += p.y;
 		}
-		
+
 		for (MapLocation loc: encampments) {
 			point p = computeWeightedVector(currentLoc.x, currentLoc.y, loc.x, loc.y, EncampmentWeight);
 			sumX += p.x;
 			sumY += p.y;
 		}
-		
+
 		MapLocation enemyHQ = rc.senseEnemyHQLocation();
 		point p = computeWeightedVector(currentLoc.x, currentLoc.y, enemyHQ.x, enemyHQ.y, 5);
 		sumX += p.x;
@@ -118,18 +118,18 @@ public class SoldierOffenseBot extends BaseBot{
 		//Get Direction
 		sumX *= 100;
 		sumY *= 100;
-		
+
 		MapLocation dest = new MapLocation((int)sumX, (int)sumY);
 		System.out.println(dest.toString());
 		return dest;
 	}
-	
+
 	protected static point computeWeightedVector(int centerX, int centerY, int x, int y, double weight) {
 		vector v = new vector(centerX, centerY, x, y);
 		point p = new point(weight*(x-centerX)/v.normsq, weight*(y-centerY)/v.normsq);
 		return p;
 	}
-	
+
 	/** 
 	 * decides on the encampment type
 	 * currently based on the clock cycles
@@ -143,5 +143,5 @@ public class SoldierOffenseBot extends BaseBot{
 			return encampmentTypes[0];
 		}
 	}
-	
+
 }
