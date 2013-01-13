@@ -105,18 +105,37 @@ public class HQBot extends BaseBot{
 	}
 	
 	//TODO: assignEncampment jobs
-	protected static void assignEncampmentJobs() {
+	protected static void assignEncampmentJobs() throws GameActionException {
+		MapLocation locs[] = rc.senseAlliedEncampmentSquares();
 		int count = 0;
 		int i = 0;
-		while(count < EncampmentLocs.length/2) {
-			
-			if (true) {
+		while(count < EncampmentLocs.length/2 && i < EncampmentLocs.length) {
+			if(inMLArray(locs, EncampmentLocs[i])) {
+				i++;
+				continue;
+			}
+			else if (false) {
 				;
 			}
-			count++;
+			else { //not allied or taken--send job
+				
+				//TODO: this!
+				//Read channel first
+				multiWrite(FirstEncampmentChannel+i, GO_CODE);
+				count++;
+				i++;
+			}
 		}		
 	}
 
+	protected static boolean inMLArray(MapLocation arr[], MapLocation loc) {
+		for (MapLocation x: arr) {
+			if (loc.equals(x))
+				return true;
+		}
+		return false;
+	}
+	
 	//TODO: test consensus messaging
 	//TODO: deal with channel hijacking
 	private static void updateMineLocations() throws GameActionException {

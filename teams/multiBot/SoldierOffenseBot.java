@@ -68,12 +68,6 @@ public class SoldierOffenseBot extends BaseBot{
 	
 	//TODO: offensive algorithm
 	
-	
-	
-	
-	
-	
-	
 	//Moves based on the encampments and allied units seen, as well as their distances
 	protected static void vectorMove() throws GameActionException {
 		MapLocation currentLoc = rc.getLocation();
