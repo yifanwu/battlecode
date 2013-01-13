@@ -31,7 +31,8 @@ public class SoldierOffenseBot extends BaseBot{
 	}
 	
 	private void offense() throws GameActionException {
-	
+		checkForJob();
+		
 		if (job != null && myLoc.equals(job)) {
 			job = null;
 			hasJob = false;

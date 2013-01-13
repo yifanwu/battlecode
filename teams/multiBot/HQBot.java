@@ -1,7 +1,4 @@
 package multiBot;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
 import java.util.*;
 
 import battlecode.common.*;
@@ -105,6 +102,16 @@ public class HQBot extends BaseBot{
 			}
 		}
 		*/	
+	}
+	
+	//TODO: assignEncampment jobs
+	protected static void assignEncampmentJobs() {
+		MapLocation locs[] = rc.senseAllEncampmentSquares();
+		int count = 0;
+		while(count < locs.length/2) {
+			//find lowest unassigned
+			count++;
+		}		
 	}
 
 	//TODO: test consensus messaging
