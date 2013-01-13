@@ -24,26 +24,25 @@ public class RobotPlayer {
 			br = new HQBot(rc);
 			break;
 		case SOLDIER:
-			
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
 			mySoldierType = SoldierType.OFFENSE;
 			
 			switch(mySoldierType) {
 				case DEFENSE:
 					br = new SoldierDefenseBot(rc);
-					System.out.println("defense bot called");
+					//System.out.println("defense bot called");
 					break;
 				case OFFENSE:
 					br = new SoldierOffenseBot(rc);	
-					System.out.println("offense bot called");
+					//System.out.println("offense bot called");
 					break;
 				case ENGULF:
 					br = new EngulferSoldier(rc);	
-					System.out.println("engulf bot called");
+					//System.out.println("engulf bot called");
 					break;
 				default:
 					br = new SoldierOffenseBot(rc);	
-					System.out.println("other bot called");
+					//System.out.println("other bot called");
 			}					
 			break;
 		default:
@@ -74,7 +73,7 @@ public class RobotPlayer {
 //		}
 		
 		int modded = (Clock.getRoundNum()/10)%5;
-		System.out.println(modded);
+		//System.out.println(modded);
 		//int modded = ID % 5;		
 		if (modded == 1) {
 			return SoldierType.DEFENSE;
