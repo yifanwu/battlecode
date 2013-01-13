@@ -26,7 +26,7 @@ public class RobotPlayer {
 		case SOLDIER:
 			
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
-			//mySoldierType = SoldierType.ENGULF;
+			mySoldierType = SoldierType.OFFENSE;
 			
 			switch(mySoldierType) {
 				case DEFENSE:
