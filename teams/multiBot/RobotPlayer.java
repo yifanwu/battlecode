@@ -7,9 +7,8 @@ public class RobotPlayer {
 	protected final static boolean VERBOSE = true; 
 	
 	public enum SoldierType {
-		OFFENSE, DEFENSE, ENGULF
+		OFFENSE, DEFENSE, ENGULF, SWARM
 	}
-
 	
 	public static void run(RobotController rc) {
 		if (Clock.getRoundNum() == 1) {
@@ -23,7 +22,7 @@ public class RobotPlayer {
 			break;
 		case SOLDIER:
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
-			mySoldierType = SoldierType.OFFENSE;
+			mySoldierType = SoldierType.SWARM;
 			
 			switch(mySoldierType) {
 				case DEFENSE:
@@ -38,10 +37,15 @@ public class RobotPlayer {
 					br = new EngulferSoldier(rc);	
 					//System.out.println("engulf bot called");
 					break;
+				case SWARM:
+					br = new SwarmBot(rc);
+					//System.out.println("swarm bot called");
+					break;
 				default:
 					br = new SoldierOffenseBot(rc);	
 					//System.out.println("other bot called");
 			}					
+			
 			break;
 		default:
 			br = new EncampBot(rc);

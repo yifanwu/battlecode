@@ -10,7 +10,7 @@ public class RobotPlayer{
 	private static int[][] neighborArray;
 	private static int[] self = {2,2};
 	private static int[][] surroundingIndices = new int[5][5];
-	
+	 
 	public static void run(RobotController myRC){
 		rc = myRC;
 		rallyPoint = findRallyPoint();
