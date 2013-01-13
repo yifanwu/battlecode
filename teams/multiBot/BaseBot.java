@@ -17,17 +17,20 @@ public abstract class BaseBot {
 	
 	protected final boolean VERBOSE = true; 
 	private static final int MAX_SQUARE_RADIUS = 10000;
-	protected static final int GO_CODE = -27;
 	protected static RobotController rc;
 	protected static MapLocation myLoc;
 	//protected GameConst GC;
-	protected MapLocation enemyHQ;
-	protected MapLocation homeHQ;
-
+	protected static MapLocation enemyHQ;
+	protected static MapLocation homeHQ;
+	protected static MapLocation[] EncampmentLocs; 
+	
 	//Communication variables
+	protected static final int GO_CODE = -27; //for instructions
+	protected static final int SPACING_CONSTANT = 5001; //for multi-channel writing
 	protected static int[] MineListenChannels = {5024, 6609, 9113};
 	protected static int MineReportChannel = 2073;
 	protected static int MineDefuseChannel = 2074;
+	protected static int FirstEncampmentChannel = 0;
 	protected static int[] ReservedChannels =
 		{MineListenChannels[0], MineListenChannels[1], MineListenChannels[2],
 		MineReportChannel, MineDefuseChannel, MineListenChannels[0] +2};
@@ -53,6 +56,7 @@ public abstract class BaseBot {
 		NumChannelGroups = (int)(100 + GameConstants.BROADCAST_READ_COST);
 		NumSavedChannels =
 			(int)(Math.min(GameConstants.BROADCAST_MAX_CHANNELS/(GameConstants.BROADCAST_SEND_COST), 10));
+		EncampmentLocs = sortLocations(rc.senseAllEncampmentSquares(), homeHQ);
 	}
 	
 	public abstract void run() throws GameActionException;
@@ -192,26 +196,81 @@ public abstract class BaseBot {
 		return count;
 	}
 	
+	//checks if HQ has a job available
+	protected static void checkForJob() throws GameActionException {
+		if(checkForEncampmentJob()) return;
+	}
 	
-	//moves towards and captures an encampment if needed
-	protected static boolean moveToEncampmentIfNeeded() {
+	//TODO: make a better sorting algorithm
+	//sort locations in order of closeness to dest
+	protected static MapLocation[] sortLocations(MapLocation[] locs, MapLocation dest) {
+		for (int i=0;i<locs.length;i++) {
+			int best = 5000;
+			int bestInd = -1;
+			for (int j=i;j<locs.length;j++) {
+				int curdist = dest.distanceSquaredTo(locs[j]);
+				if (curdist <= best) {
+					bestInd = j;
+					best = curdist;
+				}
+			}
+			MapLocation temp = locs[i];
+			locs[i] = locs[bestInd];
+			locs[bestInd] = temp;
+		}
+		return locs;
+	}
+	
+	protected static boolean checkForEncampmentJob() throws GameActionException {
+		for (int i=FirstEncampmentChannel;i<EncampmentLocs.length;i++) {
+			int ans = getMajorityAnswer(i);
+			if (ans == GO_CODE) {
+				multiWrite(i, rc.getRobot().getID());
+				hasJob = true;
+				job = EncampmentLocs[i];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected static boolean multiWrite(int baseChannel, int msg) throws GameActionException {
+		for (int i=0;i<5;i++) {
+			if(!safeWriteBroadcast(baseChannel + SPACING_CONSTANT*i, encodeMsg(msg))) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	protected static int getMajorityAnswer(int baseChannel) throws GameActionException {
+		int[] arr = new int[5];
+		for (int i=0;i<5;i++) {
+			arr[i] = decodeMsg(safeReadBroadcast(baseChannel + SPACING_CONSTANT*i));
+		}
+		int majInd = majority(arr);
+		if (majInd == -1)
+			return INVALID_CODE;
 		
+		return arr[majInd];
+	}
+	
+	protected static int safeReadBroadcast(int channel) throws GameActionException {
+		if (rc.getTeamPower() > GameConstants.BROADCAST_READ_COST) {
+			return rc.readBroadcast(channel);
+		}
+		return INVALID_CODE;
+	}
+	
+	protected static boolean safeWriteBroadcast(int channel, int msg) throws GameActionException {
+		if (rc.getTeamPower() > GameConstants.BROADCAST_SEND_COST) {
+			rc.broadcast(channel, msg);
+			return true;
+		}	
 		return false;
 	}
 	
-	protected static int encampmentListen() {	
-		
-		return 0;
-	}
-	
-	//find number of encampments
-	//one channel per encampment
-	//GO_CODE if should go
-	//ID otherwise
-	
 	//fidelity function
-	
-	
 	
 	
 	
