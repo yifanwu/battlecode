@@ -44,7 +44,7 @@ public class SoldierOffenseBot extends BaseBot{
 				rc.captureEncampment(encampmentType);
 			}
 		} else {
-			vectorMove();
+			//vectorMove();
 			MapLocation closestEncampment = findClosestEnemyEncampment();
 			MapLocation closestEnemyRobot = findClosestEnemyRobot();
 			
