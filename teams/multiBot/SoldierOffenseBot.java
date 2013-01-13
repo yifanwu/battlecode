@@ -2,8 +2,6 @@
  * 
  */
 package multiBot;
-import java.util.HashSet;
-
 import battlecode.common.*;
 
 /**
@@ -29,13 +27,22 @@ public class SoldierOffenseBot extends BaseBot{
 			}
 		}		
 	}
-
 	private void offense() throws GameActionException {
-		checkForJob();
+		if (!hasJob) {
+			checkForJob();
+		}
+
+		if (turnsOnJob > 75) {
+			hasJob = false;
+			multiWrite(jobChannel, 0);
+		}
+		//hasJob = false;
 
 		if (job != null && myLoc.equals(job)) {
+			rc.setIndicatorString(0, "Completed job to go to " + job.toString());
 			job = null;
 			hasJob = false;
+			multiWrite(jobChannel, 0);
 		}
 		if (rc.senseEncampmentSquare(rc.getLocation())) {		
 			RobotType encampmentType = chooseEncampmentType();
@@ -49,6 +56,7 @@ public class SoldierOffenseBot extends BaseBot{
 			MapLocation closestEnemyRobot = findClosestEnemyRobot();
 
 			if (hasJob) {
+				turnsOnJob++;
 				moveToLocAndDefuseMine(job);
 			}
 			else if (closestEncampment != null) {
@@ -65,7 +73,6 @@ public class SoldierOffenseBot extends BaseBot{
 			mineReport(rc.getLocation());
 		}
 	}
-
 	//TODO: offensive algorithm
 
 	//Moves based on the encampments and allied units seen, as well as their distances
@@ -120,7 +127,7 @@ public class SoldierOffenseBot extends BaseBot{
 		sumY *= 100;
 
 		MapLocation dest = new MapLocation((int)sumX, (int)sumY);
-		System.out.println(dest.toString());
+		//System.out.println(dest.toString());
 		return dest;
 	}
 

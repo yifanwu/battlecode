@@ -1,7 +1,5 @@
 package multiBot;
 
-import java.util.Arrays;
-
 import battlecode.common.*;
 
 public class SoldierDefenseBot extends BaseBot {

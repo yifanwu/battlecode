@@ -18,7 +18,7 @@ public class SwarmBot extends BaseBot {
 	@Override
 	public void run() throws GameActionException {
 		if (rc.isActive()) {
-			MapLocation closestEncampment = findClosestEnemyEncampment();
+//			MapLocation closestEncampment = findClosestEnemyEncampment();
 
 			if (rc.senseEncampmentSquare(rc.getLocation())) {		
 				RobotType encampmentType = chooseEncampmentType();

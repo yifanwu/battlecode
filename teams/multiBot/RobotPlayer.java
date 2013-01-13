@@ -1,7 +1,5 @@
 package multiBot;
 
-import java.util.Random;
-
 import battlecode.common.*;
 
 public class RobotPlayer {
@@ -24,26 +22,25 @@ public class RobotPlayer {
 			br = new HQBot(rc);
 			break;
 		case SOLDIER:
-			
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
-			//mySoldierType = SoldierType.ENGULF;
+			mySoldierType = SoldierType.OFFENSE;
 			
 			switch(mySoldierType) {
 				case DEFENSE:
-					br = new SwarmBot(rc);
-					System.out.println("defense bot called");
+					br = new SoldierDefenseBot(rc);
+					//System.out.println("defense bot called");
 					break;
 				case OFFENSE:
-					br = new SwarmBot(rc);	
-					System.out.println("offense bot called");
+					br = new SoldierOffenseBot(rc);	
+					//System.out.println("offense bot called");
 					break;
 				case ENGULF:
-					br = new SwarmBot(rc);	
-					System.out.println("engulf bot called");
+					br = new EngulferSoldier(rc);	
+					//System.out.println("engulf bot called");
 					break;
 				default:
-					br = new SwarmBot(rc);	
-					System.out.println("other bot called");
+					br = new SoldierOffenseBot(rc);	
+					//System.out.println("other bot called");
 			}					
 			break;
 		default:
@@ -74,7 +71,7 @@ public class RobotPlayer {
 //		}
 		
 		int modded = (Clock.getRoundNum()/10)%5;
-		System.out.println(modded);
+		//System.out.println(modded);
 		//int modded = ID % 5;		
 		if (modded == 1) {
 			return SoldierType.DEFENSE;
