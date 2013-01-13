@@ -22,6 +22,7 @@ public class RobotPlayer {
 			mySoldierType = SoldierType.OFFENSE;
 			switch(mySoldierType) {
 				case DEFENSE:
+					//DEFENSE IS STILL BUG
 					br = new SoldierDefenseBot(rc);
 					//System.out.println("defense bot called");
 					break;
@@ -36,7 +37,6 @@ public class RobotPlayer {
 				default:
 					br = new SoldierOffenseBot(rc);	
 					//System.out.println("other bot called");
-
 			}					
 			break;
 		default:
@@ -54,10 +54,13 @@ public class RobotPlayer {
 	// ratio: 1:1
 	// dependency: odd/even split
 	public static SoldierType getSoldierType(int ID) {
-		if (ID % 5 == 1) {
+		int modded = ID % 5;
+		if (modded == 1) {
 			return SoldierType.DEFENSE;
-		} else {
+		} else if (modded == 2 || modded == 3) {
 			return SoldierType.OFFENSE;
-		}			
+		} else {
+			return SoldierType.ENGULF;
+		}
 	}
 }
