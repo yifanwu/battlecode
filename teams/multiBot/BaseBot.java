@@ -112,8 +112,11 @@ public abstract class BaseBot {
 	//returns null if none found
 	protected MapLocation findClosestEnemyRobot() throws GameActionException {
         Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,MAX_SQUARE_RADIUS, rc.getTeam().opponent());        
-        MapLocation closestEnemy = nearestBotLocation(enemyRobots, myLoc);
+        if (enemyRobots.length == 0) {
+        	return null;
+        }
         
+        MapLocation closestEnemy = nearestBotLocation(enemyRobots, myLoc);
         return closestEnemy;
     }
 	
@@ -122,7 +125,7 @@ public abstract class BaseBot {
 	protected MapLocation nearestMapLocation(MapLocation arr[], MapLocation target) {
 		int best = -1;
 		int bestDist = -1;
-		for (int i=0;i<arr.length;i++) {
+		for (int i = 0; i < arr.length; i++) {
 			int dist = arr[i].distanceSquaredTo(target);
 			if ((bestDist == -1) || (bestDist > dist) || (bestDist == dist && arr[best].x > arr[i].x) ||
 					(bestDist == dist && arr[best].x == arr[i].x && arr[best].y > arr[i].y)) {
