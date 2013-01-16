@@ -22,23 +22,22 @@ public class RobotPlayer {
 			break;
 		case SOLDIER:
 			SoldierType mySoldierType = getSoldierType(rc.getRobot().getID());
-			mySoldierType = SoldierType.SWARM;
 			
 			switch(mySoldierType) {
 				case DEFENSE:
-					br = new MultipleRalliesBot(rc);
+					br = new SoldierDefenseBot(rc);
 					//System.out.println("defense bot called");
 					break;
 				case OFFENSE:
-					br = new MultipleRalliesBot(rc);	
+					br = new SoldierOffenseBot(rc);	
 					//System.out.println("offense bot called");
 					break;
 				case ENGULF:
-					br = new MultipleRalliesBot(rc);	
+					br = new SoldierOffenseBot(rc);	
 					//System.out.println("engulf bot called");
 					break;
 				case SWARM:
-					br = new MultipleRalliesBot(rc);
+					br = new SoldierOffenseBot(rc);
 					//System.out.println("swarm bot called");
 					break;
 				default:

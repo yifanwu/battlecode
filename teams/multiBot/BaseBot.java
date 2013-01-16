@@ -16,7 +16,7 @@ import battlecode.common.*;
 public abstract class BaseBot {
 	
 	protected final boolean VERBOSE = true; 
-	private static final int MAX_SQUARE_RADIUS = 10000;
+	private static final int MAX_SQUARE_RADIUS = 65;
 	protected static RobotController rc;
 	protected static MapLocation myLoc;
 	//protected GameConst GC;
@@ -458,6 +458,16 @@ public abstract class BaseBot {
 			return; //TODO: what if myDir is null
 		
 		if(!defuseMineIfThere(myDir) && rc.canMove(myDir)) {
+			rc.move(myDir);
+		}
+	}
+	
+	protected static void moveToLoc(MapLocation destination) throws GameActionException {
+		Direction myDir = availableDirection(destination);
+		if (myDir == null)
+			return; //TODO: what if myDir is null
+		
+		if(rc.canMove(myDir)) {
 			rc.move(myDir);
 		}
 	}

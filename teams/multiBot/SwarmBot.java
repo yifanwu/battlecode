@@ -8,7 +8,7 @@ import battlecode.common.*;
  */
 public class SwarmBot extends BaseBot {
 	private static final boolean DOREPORT = true;
-	private static final int RALLY_TIME = 200;
+	private static final int RALLY_TIME = 150;
 	private static final int TILE_NUM = 8;	
 	private static final int ALLIED_CODE = 1;
 	private static final int ENEMY_CODE = 10;
@@ -34,13 +34,16 @@ public class SwarmBot extends BaseBot {
 			// initial settings
 			myLoc = rc.getLocation(); 	// always fetch the location fresh
 
-			Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,1000000,rc.getTeam().opponent());			
+			Robot[] enemyRobots = rc.senseNearbyGameObjects(Robot.class,90,rc.getTeam().opponent());			
 			MapLocation closestEnemyRobot = nearestBotLocation(enemyRobots, myLoc); 
 			rallyPoint = findRallyPoint();
-			surroundingIndices = initSurroundingIndices(Direction.NORTH);
+			// surroundingIndices = initSurroundingIndices(Direction.NORTH);
 			
 			if (closestEnemyRobot == null) { 			// no enemies nearby
 				if (Clock.getRoundNum() < RALLY_TIME) {	// make sure we convene for a certain number.
+					if (rc.senseEncampmentSquare(myLoc)) {
+						rc.captureEncampment(RobotType.SUPPLIER);
+					}
 					moveToLocAndDefuseMine(rallyPoint);
 				} else {								// attack otherwise
 					moveToLocAndDefuseMine(rc.senseEnemyHQLocation());
@@ -49,7 +52,7 @@ public class SwarmBot extends BaseBot {
 				
 				//TODO: smart is buggy right now --- all bots escapes when hit by enemy...
 				//smartCountNeighbors(enemyRobots,closestEnemyRobot);				
-				moveToLocAndDefuseMine(closestEnemyRobot);
+				moveToLoc(closestEnemyRobot);
 			}			
 		}	
 	}
@@ -76,7 +79,7 @@ public class SwarmBot extends BaseBot {
 		
 		for (int i = 0; i<adj.length; i++) {
 			int info = adj[i];
-			int enemyNum = info%ENEMY_CODE;
+			int enemyNum = info % ENEMY_CODE;
 			if (enemyNum >= more) {
 				more = enemyNum;
 				moreDir = Direction.values()[i%8];

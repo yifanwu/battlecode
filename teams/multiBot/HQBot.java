@@ -31,7 +31,7 @@ public class HQBot extends BaseBot{
 
 		//reserveChannelJam(); for testing
 
-		if (rc.isActive()) {
+		if (rc.isActive() && rc.getTeamPower() > 30) {
 			if (Clock.getRoundNum() == 1) {
 				senseAllEncampments();
 				sendRobotToNeutralEncampment();
@@ -49,8 +49,8 @@ public class HQBot extends BaseBot{
 				else rc.researchUpgrade(Upgrade.NUKE);
 			}
 			else {
-				// Spawn a soldier
-				Direction dir = getDirForSpawn(enemyHQ);
+//				// Spawn a soldier
+				Direction dir = rc.getLocation().directionTo(enemyHQ);
 				if (rc.canMove(dir) && (totalSoldiers < MAX_SOLDIERS)) {
 					rc.spawn(dir);
 					totalSoldiers++;

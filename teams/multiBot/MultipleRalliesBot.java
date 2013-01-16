@@ -7,7 +7,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
 public class MultipleRalliesBot extends BaseBot {
-	public static final int RALLY_INTERVAL = 150;
+	public static final int RALLY_INTERVAL = 200;
 
 	public MultipleRalliesBot(RobotController myRc) {
 		super(myRc);
@@ -16,7 +16,7 @@ public class MultipleRalliesBot extends BaseBot {
 	@Override
 	public void run() throws GameActionException {
 		if (rc.isActive()) {
-			if (rc.senseEncampmentSquare(myLoc)) {
+			if (rc.senseEncampmentSquare(myLoc) && Clock.getRoundNum() < RALLY_INTERVAL) {
 				RobotType encampmentType = chooseEncampmentType(Clock.getRoundNum());
 				if (rc.getTeamPower() > rc.senseCaptureCost())
 				rc.captureEncampment(encampmentType);
@@ -45,15 +45,15 @@ public class MultipleRalliesBot extends BaseBot {
 			
 		}
 		else if (clockCycle < 2 * RALLY_INTERVAL) {
-			x = (2 * enemyHQ.x + homeHQ.x) / 3;
-			y = (2 * enemyHQ.y + homeHQ.y) / 3;
+			x = (enemyHQ.x + homeHQ.x) / 2;
+			y = (enemyHQ.y + homeHQ.y) / 2;
 			
 		}
-		else if (clockCycle < 3 * RALLY_INTERVAL) {
-			x = (2 * enemyHQ.x + homeHQ.x) / 3;
-			y = (2 * enemyHQ.y + homeHQ.y) / 3;
-			
-		}
+//		else if (clockCycle < 3 * RALLY_INTERVAL) {
+//			x = (2 * enemyHQ.x + homeHQ.x) / 3;
+//			y = (2 * enemyHQ.y + homeHQ.y) / 3;
+//			
+//		}
 		else {
 			x = enemyHQ.x;
 			y = enemyHQ.y;
@@ -65,19 +65,12 @@ public class MultipleRalliesBot extends BaseBot {
 	public static RobotType chooseEncampmentType(int clockCycle) {
 		RobotType encampment = null;
 		
-		if (clockCycle < RALLY_INTERVAL) {
+		if (clockCycle < 100) {
 			encampment = RobotType.SUPPLIER;
 			
 		}
-		else if (clockCycle < 2 * RALLY_INTERVAL) {
-			encampment = RobotType.GENERATOR;
-		}
-		else if (clockCycle < 3 * RALLY_INTERVAL) {
-			encampment = RobotType.SHIELDS;
-			
-		}
 		else {
-			encampment = RobotType.MEDBAY;
+			encampment = RobotType.GENERATOR;
 		}
 		
 		return encampment;
